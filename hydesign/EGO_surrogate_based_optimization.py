@@ -120,7 +120,7 @@ def opt_sm(sm, mixint, x0, fmin=1e10):
             'disp':False
         },
     )
-    return res.x.reshape([1,11])
+    return res.x.reshape([1,-1])
 
 def get_candiate_points(
     x, y, quantile=0.25, n_clusters=32 ): 
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     num_batteries = 2
     ems_type = 'cplex'
     opt_var = 'NPV_over_CAPEX'
-    work_dir = './results/'
+    work_dir = './results_C/'
     n_procs = 3 # number of parallel process
     
     # paralel EGO parameters
@@ -224,13 +224,13 @@ if __name__ == "__main__":
             ems_type = ems_type,
             work_dir = work_dir,
             sim_pars_fn = 'hpp_pars.yml',
-            input_ts_fn = './results/input_ts.csv',#None, # If None then it computes the weather
+            #input_ts_fn = './results/input_ts.csv',#None, # If None then it computes the weather
             # -------------------------------
-            #input_ts_fn = None, # If None then it computes the weather
-            #price_fn = 'elec_price_t_new.csv', # If input_ts_fn is given it should include Price column.
-            #era5_zarr = '/groups/reanalyses/era5/app/era5.zarr', # location of wind speed renalysis
-            #ratio_gwa_era5 = '/groups/INP/era5/ratio_gwa2_era5.nc', # location of mean wind speed correction factor
-            #era5_ghi_zarr = '/groups/INP/era5/ghi.zarr', # location of GHI renalysis
+            input_ts_fn = None, # If None then it computes the weather
+            price_fn = 'elec_price_t_new.csv', # If input_ts_fn is given it should include Price column.
+            era5_zarr = '/groups/reanalyses/era5/app/era5.zarr', # location of wind speed renalysis
+            ratio_gwa_era5 = '/groups/INP/era5/ratio_gwa2_era5.nc', # location of mean wind speed correction factor
+            era5_ghi_zarr = '/groups/INP/era5/ghi.zarr', # location of GHI renalysis
             elevation_fn = '/groups/INP/era5/SRTMv3_plus_ViewFinder_coarsen.nc',
             genWT_fn='/home/jumu/Hydesign_openmdao_dev/hydesign/hydesign/Aug3/genWT_v3.nc',
             genWake_fn='/home/jumu/Hydesign_openmdao_dev/hydesign/hydesign/Aug3/genWake_v3.nc',
@@ -299,9 +299,9 @@ if __name__ == "__main__":
         #clearance: min distance tip to ground
         [10, 60],
         #Specific Power
-        [180, 330],
+        [200, 400],
         #p_rated
-        [1, 5],
+        [1, 10],
         #Nwt
         [0, 300],
         #wind_MW_per_km2
@@ -309,15 +309,15 @@ if __name__ == "__main__":
         #solar_MW
         [0, 400],
         #surface_tilt
-        [10, 50],
+        [0, 50],
         #surface_azimuth
         [150, 210],
         #DC_AC_ratio
-        [1, 1.5],
+        [1, 2.0],
         #b_P in MW
         [0, 300],
         #b_E_h in h
-        [1, 20],
+        [1, 10],
         #cost_of_battery_P_fluct_in_peak_price_ratio: limits battery deggradation in EMS optimization
         [0, 20],
         ])   
