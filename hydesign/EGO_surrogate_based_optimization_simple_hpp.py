@@ -231,6 +231,12 @@ if __name__ == "__main__":
     parser.add_argument('--input_ts_fn', help = "Input ts file name")
     parser.add_argument('--sim_pars_fn', help = "Simulation parameters file name")
     parser.add_argument('--opt_var', help="Objective function for sizing optimization, should be one of: ['NPV_over_CAPEX','NPV [MEuro]','IRR','LCOE [Euro/MWh]','CAPEX [MEuro]','OPEX [MEuro]','penalty lifetime [MEuro]']")
+    parser.add_argument('--rotor_diameter_m', help='WT rotor diameter [m]')
+    parser.add_argument('--hub_height_m', help='WT hub height [m]')
+    parser.add_argument('--wt_rated_power_MW', help='WT rated power [MW]')
+    parser.add_argument('--surface_tilt_deg', help='PV surface tilt [deg]')
+    parser.add_argument('--surface_azimuth_deg', help='PV surface azimuth [deg]')
+    parser.add_argument('--DC_AC_ratio', help='PV DC/AC ratio, this ratio defines how much overplanting of DC power is done with respect the inverter. P_DC/P_AC [-]')
     parser.add_argument('--num_batteries', help='Maximum number of batteries to be considered in the design.')
     
     parser.add_argument('--n_procs', help='Number of processors to use')
@@ -274,6 +280,14 @@ if __name__ == "__main__":
             raise(f'Not a valid example: {int(example)}')
     
     opt_var = str(args.opt_var)
+        
+    rotor_diameter_m = float(args.rotor_diameter_m)
+    hub_height_m = float(args.hub_height_m)
+    wt_rated_power_MW = float(args.wt_rated_power_MW)
+    surface_tilt_deg = float(args.surface_tilt_deg)
+    surface_azimuth_deg = float(args.surface_azimuth_deg)
+    DC_AC_ratio = float(args.DC_AC_ratio)
+    num_batteries = int(args.num_batteries)
     
     n_procs = int(args.n_procs)
     n_doe = int(args.n_doe)
@@ -307,15 +321,22 @@ if __name__ == "__main__":
     print('\n\n\n')
     print(f'Sizing a HPP plant at {name}:')
     print()
-    hpp_m = hpp_model(
+    hpp_m = hpp_model_simple(
             latitude,
             longitude,
             altitude,
+            rotor_diameter_m = rotor_diameter_m,
+            hub_height_m = hub_height_m,
+            wt_rated_power_MW = wt_rated_power_MW,
+            surface_tilt_deg = surface_tilt_deg,
+            surface_azimuth_deg = surface_azimuth_deg,
+            DC_AC_ratio = DC_AC_ratio,
             num_batteries = num_batteries,
             work_dir = work_dir,
             sim_pars_fn = sim_pars_fn,
             input_ts_fn = input_ts_fn,
     )
+    
     print('\n\n')
     
     # Lists of all possible outputs, inputs to the hpp model
@@ -333,36 +354,24 @@ if __name__ == "__main__":
     
     # Stablish types for design variables
     xtypes = [
-        #clearance, sp, p_rated, Nwt, wind_MW_per_km2, 
-        INT, INT, INT, INT, FLOAT, 
-        #solar_MW, surface_tilt, surface_azimuth, DC_AC_ratio
-        INT,FLOAT,FLOAT,FLOAT,
+        #Nwt, wind_MW_per_km2, 
+        INT, FLOAT, 
+        #solar_MW
+        INT,
         #b_P, b_E_h , cost_of_battery_P_fluct_in_peak_price_ratio
         INT,INT,FLOAT]
 
     xlimits = np.array([
-        #clearance: min distance tip to ground
-        [10, 60],
-        #Specific Power
-        [200, 400],
-        #p_rated
-        [1, 10],
         #Nwt
         [0, 500],
         #wind_MW_per_km2
         [5, 9],
         #solar_MW
-        [0, 400],
-        #surface_tilt
-        [0, 50],
-        #surface_azimuth
-        [150, 210],
-        #DC_AC_ratio
-        [1, 2.0],
+        [0, 500],
         #b_P in MW
-        [0, 100],
+        [0, 300],
         #b_E_h in h
-        [1, 10],
+        [1, 24],
         #cost_of_battery_P_fluct_in_peak_price_ratio
         [0, 20],
         ])    

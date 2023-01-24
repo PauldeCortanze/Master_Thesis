@@ -25,7 +25,7 @@ from hydesign.finance import finance
 from hydesign.look_up_tables import lut_filepath
 
 
-class hpp_model:
+class hpp_model_simple:
     """HPP design evaluator"""
 
     def __init__(
@@ -33,6 +33,12 @@ class hpp_model:
         latitude,
         longitude,
         altitude=None,
+        rotor_diameter_m = 100,
+        hub_height_m = 100,
+        wt_rated_power_MW = 1,
+        surface_tilt_deg = 20,
+        surface_azimuth_deg = 180,
+        DC_AC_ratio=1.5,
         sim_pars_fn=None,
         work_dir = './',
         num_batteries = 1,
@@ -84,6 +90,13 @@ class hpp_model:
         print('longitude =',longitude)
         print('latitude =',latitude)
         print('altitude =',altitude)
+        print()
+        print('rotor_diameter_m =',rotor_diameter_m)
+        print('hub_height_m =',hub_height_m)
+        print('wt_rated_power_MW =',wt_rated_power_MW)
+        print('surface_tilt_deg =',surface_tilt_deg)
+        print('surface_azimuth_deg =',surface_azimuth_deg)
+        print('DC_AC_ratio =',DC_AC_ratio)
         
         # Parameters of the simulation
         year_start = sim_pars['year']
@@ -384,6 +397,20 @@ class hpp_model:
         )
 
         prob.setup()        
+                
+        prob.set_val('hh', hub_height_m)
+        prob.set_val('d', rotor_diameter_m)
+        prob.set_val('p_rated', wt_rated_power_MW)
+        prob.set_val('surface_tilt', surface_tilt_deg)
+        prob.set_val('surface_azimuth', surface_azimuth_deg)
+        prob.set_val('DC_AC_ratio', DC_AC_ratio)
+        
+        self.hh = hub_height_m
+        self.d = rotor_diameter_m
+        self.p_rated = wt_rated_power_MW
+        self.surface_tilt = surface_tilt_deg
+        self.surface_azimuth = surface_azimuth_deg
+        self.DC_AC_ratio = DC_AC_ratio
         
         # Additional parameters
         prob.set_val('price_t', weather['Price'])
@@ -430,15 +457,9 @@ class hpp_model:
             ]
 
         self.list_vars = [
-            'clearance [m]', 
-            'sp [m2/W]', 
-            'p_rated [MW]', 
             'Nwt', 
             'wind_MW_per_km2 [MW/km2]', 
             'solar_MW [MW]', 
-            'surface_tilt [deg]', 
-            'surface_azimuth [deg]', 
-            'DC_AC_ratio', 
             'b_P [MW]', 
             'b_E_h [h]',
             'cost_of_battery_P_fluct_in_peak_price_ratio'
@@ -448,9 +469,9 @@ class hpp_model:
     def evaluate(
         self,
         # Wind plant design
-        clearance, sp, p_rated, Nwt, wind_MW_per_km2,
+        Nwt, wind_MW_per_km2,
         # PV plant design
-        solar_MW,  surface_tilt, surface_azimuth, DC_AC_ratio,
+        solar_MW, 
         # Energy storage & EMS price constrains
         b_P, b_E_h, cost_of_battery_P_fluct_in_peak_price_ratio
         ):
@@ -494,25 +515,13 @@ class hpp_model:
 
         prob = self.prob
         
-        d = get_rotor_d(p_rated*1e6/sp)
-        hh = (d/2)+clearance
-        wind_MW = Nwt * p_rated
+        wind_MW = Nwt * self.p_rated
         Awpp = wind_MW / wind_MW_per_km2 
-        #Awpp = Awpp + 1e-10*(Awpp==0)
         b_E = b_E_h * b_P
         
         # pass design variables        
-        prob.set_val('hh', hh)
-        prob.set_val('d', d)
-        prob.set_val('p_rated', p_rated)
         prob.set_val('Nwt', Nwt)
         prob.set_val('Awpp', Awpp)
-        #Apvp = solar_MW * self.sim_pars['land_use_per_solar_MW']
-        #prob.set_val('Apvp', Apvp)
-
-        prob.set_val('surface_tilt', surface_tilt)
-        prob.set_val('surface_azimuth', surface_azimuth)
-        prob.set_val('DC_AC_ratio', DC_AC_ratio)
         prob.set_val('solar_MW', solar_MW)
         
         prob.set_val('b_P', b_P)
@@ -541,8 +550,8 @@ class hpp_model:
             b_P,
             prob['total_curtailment']/1e3, #[GWh]
             Awpp,
-            d,
-            hh,
+            self.d,
+            self.hh,
             self.num_batteries
             ])
     
@@ -552,7 +561,8 @@ class hpp_model:
         print('---------------') 
 
         for i_v, var in enumerate(self.list_vars):
-                print(f'{var}: {x_opt[i_v]:.3f}')
+            str_var = f'{x_opt[i_v]:.3f}'.replace('.000','')
+            print(f'{var}: {str_var}')
         print()    
         print()
         for i_v, var in enumerate(self.list_out_vars):

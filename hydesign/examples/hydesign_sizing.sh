@@ -31,16 +31,24 @@ echo -----------------------------------------------------------------
 # Set environment
 source /home/jumu/miniconda3/bin/activate
 conda activate hydesign
-# python /home/jumu/hydesign/hydesign/EGO_surrogate_based_optimization.py --case "India" --site "Indian_site_bad_solar_bad_wind" --opt_var "NPV_over_CAPEX"
-
-# Examples of other runs
-# ----------------------
-python /home/jumu/hydesign/hydesign/EGO_surrogate_based_optimization.py --case "India" --site "Indian_site_bad_solar_bad_wind" --opt_var "LCOE [Euro/MWh]"
-
-# python /home/jumu/hydesign/hydesign/EGO_surrogate_based_optimization.py --case "Europe" --site "Denmark_good_solar" --opt_var "NPV_over_CAPEX"
-# python /home/jumu/hydesign/hydesign/EGO_surrogate_based_optimization.py --case "Europe" --site "Denmark_good_solar" --opt_var "LCOE [Euro/MWh]"
-
+python ../EGO_surrogate_based_optimization.py \
+    --example 0 \
+    --opt_var "NPV_over_CAPEX"\
+    --rotor_diameter_m 100\
+    --hub_height_m 120\
+    --wt_rated_power_MW 2\
+    --surface_tilt_deg 20\
+    --surface_azimuth_deg 180\
+    --DC_AC_ratio 1\
+    --num_batteries 1\
+    --n_procs  31\
+    --n_doe 31\
+    --n_clusters 16\
+    --n_seed 0\
+    --max_iter 10\
+    --final_design_fn 'hydesign_simple_design_0.csv'
+    
 
 # Example usage:
 # --------------
-# sbatch hydesign_run.sh
+# sbatch hydesign_sizing.sh
