@@ -1,16 +1,10 @@
-import glob
-import os
-import time
-
 # basic libraries
 import numpy as np
-from numpy import newaxis as na
 import numpy_financial as npf
 import pandas as pd
-# import seaborn as sns
 import openmdao.api as om
-import yaml
 import scipy as sp
+from hydesign.HiFiEMS.utils import _revenue_calculation
 
 class finance(om.ExplicitComponent):
     """Hybrid power plant financial model to estimate the overall profitability of the hybrid power plant.
@@ -23,7 +17,8 @@ class finance(om.ExplicitComponent):
 
     def __init__(
         self, 
-        N_time, 
+        parameter_dict,
+        # N_time, 
 
         # Depreciation curve
         depreciation_yr,
@@ -39,6 +34,7 @@ class finance(om.ExplicitComponent):
         phasing_CAPEX,
         
         life_y = 25,
+        intervals_per_hour = 4,
         ):
         """Initialization of the HPP finance model
 
@@ -48,9 +44,11 @@ class finance(om.ExplicitComponent):
         life_h : Lifetime of the plant in hours
         """ 
         super().__init__()
-        self.N_time = int(N_time)
+        self.parameter_dict = parameter_dict
         self.life_y = life_y
-        self.life_h = int(life_y*365*24)
+        self.intervals_per_hour = intervals_per_hour
+        self.life_h = 365 * 24 * life_y
+        self.life_intervals = self.life_h * intervals_per_hour
 
         # Depreciation curve
         self.depreciation_yr = depreciation_yr
@@ -66,18 +64,42 @@ class finance(om.ExplicitComponent):
         self.phasing_CAPEX = phasing_CAPEX
 
     def setup(self):
-        self.add_input('price_t_ext',
-                       desc="Electricity price time series",
-                       shape=[self.life_h])
+        self.add_input('G_MW',
+                       units='MW',
+                       desc='Grid size')
+        
+        self.add_input('wind_MW',
+                       units='MW',
+                       desc='Wind plant nominal size')
+        
+        self.add_input('solar_MW',
+                       units='MW',
+                       desc='Solar plant nominal size')
+        
+        self.add_input('b_E',
+                       desc="Battery energy storage capacity")
+        
+
+        self.add_input('battery_depth_of_discharge',
+                       desc="battery depth of discharge",
+                       units='MW')
+
+
+        self.add_input('b_P',
+                       desc="Battery power capacity",
+                       units='MW')
+        # self.add_input('price_t_ext',
+        #                desc="Electricity price time series",
+        #                shape=[self.life_h])
         
         self.add_input('hpp_t_with_deg',
                        desc="HPP power time series",
                        units='MW',
-                       shape=[self.life_h])
+                       shape=[self.life_intervals])
         
-        self.add_input('penalty_t',
-                        desc="penalty for not reaching expected energy productin at peak hours",
-                        shape=[self.life_h])
+        # self.add_input('penalty_t',
+        #                 desc="penalty for not reaching expected energy productin at peak hours",
+        #                 shape=[self.life_intervals])
 
         self.add_input('CAPEX_w',
                        desc="CAPEX wpp")
@@ -111,6 +133,21 @@ class finance(om.ExplicitComponent):
         self.add_input('tax_rate',
                        desc="Corporate tax rate")
         
+        self.add_input('P_HPP_SM_t_opt',desc='',shape=[self.life_intervals],)
+        self.add_input('SM_price_cleared',desc='',shape=[self.life_h],)
+        self.add_input('BM_dw_price_cleared',desc='',shape=[self.life_h],)
+        self.add_input('BM_up_price_cleared',desc='',shape=[self.life_h],)
+        self.add_input('P_HPP_RT_refs',desc='',shape=[self.life_intervals],)
+        self.add_input('P_HPP_UP_bid_ts',desc='',shape=[self.life_intervals],)
+        self.add_input('P_HPP_DW_bid_ts',desc='',shape=[self.life_intervals],)
+        self.add_input('s_UP_t',desc='',shape=[self.life_intervals],)
+        self.add_input('s_DW_t',desc='',shape=[self.life_intervals],)
+        self.add_input('residual_imbalance',desc='',shape=[self.life_intervals],)
+        self.add_input('P_HPP_ts',desc='',shape=[self.life_intervals],)
+        self.add_input('P_curtailment_ts',desc='',shape=[self.life_intervals],)
+        self.add_input('P_charge_discharge_ts',desc='',shape=[self.life_intervals],)
+        self.add_input('E_SOC_ts',desc='',shape=[self.life_intervals + 1],)
+
         self.add_output('CAPEX',
                         desc="CAPEX")
         
@@ -142,7 +179,10 @@ class finance(om.ExplicitComponent):
                         val=0)
 
     def setup_partials(self):
-        self.declare_partials('*', '*', method='fd')
+        self.declare_partials('*', '*', dependent=False, val=0)
+
+    def compute_partials(self, inputs, partials):
+        pass        
 
     def compute(self, inputs, outputs):
         """ Calculating the financial metrics of the hybrid power plant project.
@@ -176,10 +216,26 @@ class finance(om.ExplicitComponent):
         LCOE : Levelized cost of energy
         penalty_lifetime : total penalty
         """
-        
-        N_time = self.N_time
-        life_h = self.life_h
-        life_yr = int(np.ceil(life_h/N_time))
+        parameter_dict = self.parameter_dict
+        parameter_dict.update({
+            # hpp parameters
+            'hpp_grid_connection': float(inputs['G_MW']),  # in MW
+
+            # hpp wind parameters
+            'wind_capacity': float(inputs['wind_MW']), #in MW
+
+            # hpp solar parameters
+            'solar_capacity': float(inputs['solar_MW']),  # in MW
+                       
+            # hpp battery parameters
+            'battery_energy_capacity': float(inputs['b_E']),  # in MWh
+            'battery_power_capacity': float(inputs['b_P']),  # in MW
+            'battery_minimum_SoC': 1 - float(inputs['battery_depth_of_discharge']),
+            })
+       
+        intervals_per_year = 365 * 24 * self.intervals_per_hour
+        life_intervals = self.life_y * intervals_per_year
+        life_yr = self.life_y
 
         depreciation_yr = self.depreciation_yr
         depreciation = self.depreciation
@@ -194,14 +250,22 @@ class finance(om.ExplicitComponent):
         df = pd.DataFrame()
         
         df['hpp_t'] = inputs['hpp_t_with_deg']
-        # df['price_t'] = inputs['price_t_ext']
-        df['penalty_t'] = inputs['penalty_t']
-        # df['revenue'] = df['hpp_t'] * df['price_t'] - df['penalty_t']
         
-        df['i_year'] = np.hstack([np.array([ii]*N_time) for ii in range(life_yr)])[:life_h]
+        df['i_year'] = np.hstack([np.array([ii]*intervals_per_year) for ii in range(life_yr)])[:life_intervals]
 
-        # Compute yearly revenues and cashflow
-        revenues = calculate_revenues(inputs['price_t_ext'], df)
+        revenues = calculate_revenues(self.parameter_dict,
+                                      inputs['P_HPP_SM_t_opt'],
+                                      inputs['P_HPP_ts'],
+                                      inputs['P_HPP_RT_refs'],
+                                      inputs['SM_price_cleared'],
+                                      inputs['BM_dw_price_cleared'],
+                                      inputs['BM_up_price_cleared'],
+                                      inputs['P_HPP_UP_bid_ts'],
+                                      inputs['P_HPP_DW_bid_ts'],
+                                      inputs['s_UP_t'],
+                                      inputs['s_DW_t'],
+                                      df)
+
         CAPEX = inputs['CAPEX_w'] + inputs['CAPEX_s'] + \
             inputs['CAPEX_b'] + inputs['CAPEX_el']
         OPEX = inputs['OPEX_w'] + inputs['OPEX_s'] + \
@@ -277,14 +341,24 @@ class finance(om.ExplicitComponent):
                 depreciation = depreciation, 
                 DEVEX = DEVEX,
                 inflation_index = inflation_index,
+                parameter_dict = self.parameter_dict,
+                P_HPP_SM_t_opt = inputs['P_HPP_SM_t_opt'],
+                P_HPP_ts = inputs['P_HPP_ts'],
+                P_HPP_RT_refs = inputs['P_HPP_RT_refs'],
+                SM_price_cleared = inputs['SM_price_cleared'],
+                BM_dw_price_cleared = inputs['BM_dw_price_cleared'],
+                BM_up_price_cleared = inputs['BM_up_price_cleared'],
+                P_HPP_UP_bid_ts = inputs['P_HPP_UP_bid_ts'],
+                P_HPP_DW_bid_ts = inputs['P_HPP_DW_bid_ts'],
+                s_UP_t = inputs['s_UP_t'],
+                s_DW_t = inputs['s_DW_t'],
                 ))
-
         outputs['NPV'] = NPV
         outputs['IRR'] = IRR
         outputs['NPV_over_CAPEX'] = NPV / CAPEX
 
         level_costs = np.sum(OPEX / (1 + hpp_discount_factor)**iy) + CAPEX
-        AEP_per_year = df.groupby('i_year').hpp_t.mean()*365*24
+        AEP_per_year = df.groupby('i_year').hpp_t.mean()*365*24*self.intervals_per_hour
         level_AEP = np.sum(AEP_per_year / (1 + hpp_discount_factor)**iy)
 
         mean_AEP_per_year = np.mean(AEP_per_year)
@@ -295,7 +369,7 @@ class finance(om.ExplicitComponent):
 
         outputs['mean_AEP'] = mean_AEP_per_year
         
-        outputs['penalty_lifetime'] = df['penalty_t'].sum()
+        # outputs['penalty_lifetime'] = df['penalty_t'].sum()
         outputs['break_even_PPA_price'] = break_even_PPA_price
 
 
@@ -395,16 +469,61 @@ def calculate_WACC(
     return WACC_after_tax
 
 
-def calculate_revenues(price_el, df):
-    df['revenue'] = df['hpp_t'] * np.broadcast_to(price_el, df['hpp_t'].shape) - df['penalty_t']
-    return df.groupby('i_year').revenue.mean()*365*24
+def calculate_revenues(parameter_dict,
+                       P_HPP_SM_t_opt,
+                       P_HPP_ts,
+                       P_HPP_RT_refs,
+                       SM_price_cleared,
+                       BM_dw_price_cleared,
+                       BM_up_price_cleared,
+                       P_HPP_UP_bid_ts,
+                       P_HPP_DW_bid_ts,
+                       s_UP_t,
+                       s_DW_t,
+                       df):
+    SM_revenue, _, _, BM_revenue, _ = _revenue_calculation(parameter_dict,
+                                                          P_HPP_SM_t_opt,
+                                                          P_HPP_ts,
+                                                          P_HPP_RT_refs,
+                                                          SM_price_cleared,
+                                                          BM_dw_price_cleared,
+                                                          BM_up_price_cleared,
+                                                          P_HPP_UP_bid_ts,
+                                                          P_HPP_DW_bid_ts,
+                                                          s_UP_t,
+                                                          s_DW_t,
+                                                          BI=1,
+                                                          )
+    df['revenue'] = SM_revenue + BM_revenue
+    return df.groupby('i_year').revenue.mean()*365*24*4
 
    
 
 def calculate_break_even_PPA_price(df, CAPEX, OPEX, tax_rate, discount_rate,
-                                   depreciation_yr, depreciation, DEVEX, inflation_index):
+                                   depreciation_yr, depreciation, DEVEX, inflation_index, parameter_dict,
+                                                          P_HPP_SM_t_opt,
+                                                          P_HPP_ts,
+                                                          P_HPP_RT_refs,
+                                                          SM_price_cleared,
+                                                          BM_dw_price_cleared,
+                                                          BM_up_price_cleared,
+                                                          P_HPP_UP_bid_ts,
+                                                          P_HPP_DW_bid_ts,
+                                                          s_UP_t,
+                                                          s_DW_t,):
     def fun(price_el):
-        revenues = calculate_revenues(price_el, df)
+        revenues = calculate_revenues(parameter_dict,
+                               P_HPP_SM_t_opt,
+                               P_HPP_ts,
+                               P_HPP_RT_refs,
+                               price_el * np.ones_like(SM_price_cleared),
+                               BM_dw_price_cleared,
+                               BM_up_price_cleared,
+                               P_HPP_UP_bid_ts,
+                               P_HPP_DW_bid_ts,
+                               s_UP_t,
+                               s_DW_t,
+                               df)
         NPV, _ = calculate_NPV_IRR(
             Net_revenue_t = revenues.values.flatten(),
             investment_cost = CAPEX,
