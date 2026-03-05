@@ -55,7 +55,8 @@ class hpp_base:
 
         # Combine Wind farm surrogate directory and file paths
         genWT_fn = os.path.join(sim_pars["gen_lut_dir"], sim_pars["genWT_fn"])
-        genWake_fn = os.path.join(sim_pars["gen_lut_dir"], sim_pars["genWake_fn"])
+        genWake_fn = os.path.join(
+            sim_pars["gen_lut_dir"], sim_pars["genWake_fn"])
         sim_pars["genWT_fn"] = genWT_fn
         sim_pars["genWake_fn"] = genWake_fn
 
@@ -84,7 +85,8 @@ class hpp_base:
             altitude = (
                 elevation_ds["elev"]
                 .interp(
-                    latitude=latitude, longitude=longitude, kwargs={"fill_value": 0.0}
+                    latitude=latitude, longitude=longitude, kwargs={
+                        "fill_value": 0.0}
                 )
                 .values
             )
@@ -127,11 +129,13 @@ class hpp_base:
         if input_ts_fn == None:
 
             # Weather database
-            era5_zarr = sim_pars["era5_zarr"]  # location of wind speed renalysis
+            # location of wind speed renalysis
+            era5_zarr = sim_pars["era5_zarr"]
             ratio_gwa_era5 = sim_pars[
                 "ratio_gwa_era5"
             ]  # location of mean wind speed correction factor
-            era5_ghi_zarr = sim_pars["era5_ghi_zarr"]  # location of GHI renalysis
+            # location of GHI renalysis
+            era5_ghi_zarr = sim_pars["era5_ghi_zarr"]
 
             weather = extract_weather_for_HPP(
                 longitude=longitude,
@@ -209,7 +213,8 @@ class hpp_base:
             # number of points in the power curves
             self.N_ws = len(ds.ws.values)
 
-        sim_pars["time_str"] = datetime.datetime.now().strftime("%y_%m_%H_%M_%S")
+        sim_pars["time_str"] = datetime.datetime.now().strftime(
+            "%y_%m_%H_%M_%S")
 
         if "H2_demand_fn" in sim_pars:
             H2_demand_fn = sim_pars["H2_demand_fn"]
@@ -282,7 +287,8 @@ class hpp_base:
                 )
             else:
                 if sim_pars[var] is None:
-                    raise ValueError(f"variable: '{var}' cannot be provided as None")
+                    raise ValueError(
+                        f"variable: '{var}' cannot be provided as None")
 
     def check_outputs(self, x_opt, outs):
         if x_opt is None:
@@ -300,6 +306,10 @@ class hpp_base:
                     "No outputs provided. Please provide outputs to print the design."
                 )
         return x_opt, outs
+
+    def test(self):
+        print("Success")
+        return True
 
     def print_design(self, x_opt=None, outs=None):
         x_opt, outs = self.check_outputs(x_opt, outs)
@@ -341,7 +351,8 @@ class hpp_base:
             index=range(1),
         )
         design_df.iloc[0] = (
-            [self.longitude, self.latitude, self.altitude] + list(x_opt) + list(outs)
+            [self.longitude, self.latitude, self.altitude] +
+            list(x_opt) + list(outs)
         )
         return design_df
 
@@ -350,7 +361,7 @@ class hpp_base:
             design_df = self.evaluation_in_df(x_opt, outs)
         design_df.to_csv(f"{name_file}.csv")
 
-    def get_prob(self, comps):
+    def get_prob(self, comps, driver_type='ga'):
         prob = om.Problem(reports=None)
         for c in comps:
             if len(c) == 2:
@@ -368,6 +379,20 @@ class hpp_base:
                 prob.model.add_subsystem(
                     c[0], c[1], promotes_inputs=input_list, promotes_outputs=output_list
                 )
+
+        if driver_type == "scipy":
+            prob.driver = om.ScipyOptimizeDriver()
+            prob.driver.options["optimizer"] = "SLSQP"
+            prob.driver.options["maxiter"] = 200
+        elif driver_type == "ga":
+            prob.driver = om.SimpleGADriver()
+            prob.driver.options["max_gen"] = 100
+            prob.driver.options["pop_size"] = 40
+        elif driver_type == "pso":
+            prob.driver = om.pyOptSparseDriver()
+            prob.driver.options["optimizer"] = "PSO"
+        else:
+            raise ValueError(f"Unknown driver type: {driver_type}")
         return prob
 
 
@@ -610,11 +635,12 @@ class hpp_model(hpp_base):
                     "CAPEX_el": "CAPEX_sh",
                     "OPEX_el": "OPEX_sh",
                     "penalty_t": "penalty_t_with_deg",
-                },  # {<input-key-name in model> (that corresponds to): <output-key-name from prior component>}
+                    # {<input-key-name in model> (that corresponds to): <output-key-name from prior component>}
+                },
             ),
         ]
 
-        prob = self.get_prob(comps)
+        prob = self.get_prob(comps, driver_type='ga')
 
         prob.setup()
 
@@ -624,7 +650,8 @@ class hpp_model(hpp_base):
         prob.set_val(
             "battery_depth_of_discharge", sim_pars["battery_depth_of_discharge"]
         )
-        prob.set_val("battery_charge_efficiency", sim_pars["battery_charge_efficiency"])
+        prob.set_val("battery_charge_efficiency",
+                     sim_pars["battery_charge_efficiency"])
         prob.set_val("peak_hr_quantile", sim_pars["peak_hr_quantile"])
         prob.set_val(
             "n_full_power_hours_expected_per_day_at_peak_price",
@@ -635,7 +662,8 @@ class hpp_model(hpp_base):
         prob.set_val("solar_WACC", sim_pars["solar_WACC"])
         prob.set_val("battery_WACC", sim_pars["battery_WACC"])
         prob.set_val("tax_rate", sim_pars["tax_rate"])
-        prob.set_val("land_use_per_solar_MW", sim_pars["land_use_per_solar_MW"])
+        prob.set_val("land_use_per_solar_MW",
+                     sim_pars["land_use_per_solar_MW"])
 
         self.prob = prob
 
@@ -854,6 +882,66 @@ class hpp_model(hpp_base):
         self.outputs = outputs
         return outputs
 
+    def test(self):
+        print("Success")
+        return True
+
+    def optimize(self):
+        """Optimize the sizing of the hybrid power plant."""
+
+        # Define the design variables and their bounds
+        design_vars = [
+            "clearance [m]",
+            "sp [W/m2]",
+            "p_rated [MW]",
+            "Nwt",
+            "wind_MW_per_km2 [MW/km2]",
+            "solar_MW [MW]",
+            "surface_tilt [deg]",
+            "surface_azimuth [deg]",
+            "DC_AC_ratio",
+            "b_P [MW]",
+            "b_E_h [h]",
+            "cost_of_battery_P_fluct_in_peak_price_ratio",
+        ]
+
+        initial_value = [
+            60.000,
+            287.000,
+            10.000,
+            31.000,
+            5.000,
+            200.000,
+            25.000,
+            180.000,
+            1.000,
+            50.000,
+            6.000,
+            10.000,
+        ]
+
+        # Set initial values for the design variables
+        for var in design_vars:
+            self.prob.set_val(var, initial_value)
+
+        # Run the optimization driver
+        self.prob.run_driver()
+
+        # Retrieve the optimized values
+        optimized_values = {var: self.prob.get_val(var) for var in design_vars}
+        optimized_outputs = {out_var: self.prob.get_val(
+            out_var) for out_var in self.list_out_vars}
+
+        # Print or log results
+        print("Optimized Design Variables:")
+        for var, value in optimized_values.items():
+            print(f"{var}: {value}")
+
+        print("Optimized Outputs:")
+        for out_var, value in optimized_outputs.items():
+            print(f"{out_var}: {value}")
+
+        return optimized_values, optimized_outputs
 
 # -----------------------------------------------------------------------
 # Auxiliar functions for ems modelling
@@ -891,6 +979,7 @@ if __name__ == "__main__":
     altitude = ex_site["altitude"].values[0]
 
     sim_pars_fn = examples_filepath + ex_site["sim_pars_fn"].values[0]
+    print("sim_pars_fn", sim_pars_fn)
     input_ts_fn = examples_filepath + ex_site["input_ts_fn"].values[0]
 
     hpp = hpp_model(
