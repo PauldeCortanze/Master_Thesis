@@ -307,10 +307,6 @@ class hpp_base:
                 )
         return x_opt, outs
 
-    def test(self):
-        print("Success")
-        return True
-
     def print_design(self, x_opt=None, outs=None):
         x_opt, outs = self.check_outputs(x_opt, outs)
         print()
@@ -361,7 +357,7 @@ class hpp_base:
             design_df = self.evaluation_in_df(x_opt, outs)
         design_df.to_csv(f"{name_file}.csv")
 
-    def get_prob(self, comps, driver_type='ga'):
+    def get_prob(self, comps):
         prob = om.Problem(reports=None)
         for c in comps:
             if len(c) == 2:
@@ -379,21 +375,41 @@ class hpp_base:
                 prob.model.add_subsystem(
                     c[0], c[1], promotes_inputs=input_list, promotes_outputs=output_list
                 )
-
-        if driver_type == "scipy":
-            prob.driver = om.ScipyOptimizeDriver()
-            prob.driver.options["optimizer"] = "SLSQP"
-            prob.driver.options["maxiter"] = 200
-        elif driver_type == "ga":
-            prob.driver = om.SimpleGADriver()
-            prob.driver.options["max_gen"] = 100
-            prob.driver.options["pop_size"] = 40
-        elif driver_type == "pso":
-            prob.driver = om.pyOptSparseDriver()
-            prob.driver.options["optimizer"] = "PSO"
-        else:
-            raise ValueError(f"Unknown driver type: {driver_type}")
         return prob
+
+    def load_simulation_parameters(self, sim_pars_fn, defaults, kwargs):
+        sim_pars = self.get_defaults()
+        sim_pars.update(defaults)
+        with open(sim_pars_fn) as file:
+            sim_pars.update(yaml.load(file, Loader=yaml.FullLoader))
+        sim_pars.update(kwargs)
+        self.check_inputs(sim_pars)
+        return sim_pars
+
+    def setup_optimization(self):
+        self.prob = om.Problem()
+        model = self.prob.model
+
+        # Example design variables
+        model.add_design_var('clearance', lower=0.0, upper=100.0)
+        model.add_design_var('Nwt', lower=1, upper=10)
+
+        # Example objective
+        # Replace with your function
+        model.add_objective('some_objective_function')
+
+        # Set up the driver
+        self.prob.driver = om.SimpleGADriver()  # or other driver
+        self.prob.driver.options['pop_size'] = 100
+        self.prob.driver.options['max_gen'] = 50
+
+    def run_optimization(self):
+        self.prob.setup()
+        self.prob.run_driver()
+
+    def optimize(self):
+        self.setup_optimization()
+        self.run_optimization()
 
 
 class hpp_model(hpp_base):
@@ -640,7 +656,7 @@ class hpp_model(hpp_base):
             ),
         ]
 
-        prob = self.get_prob(comps, driver_type='ga')
+        prob = self.get_prob(comps)
 
         prob.setup()
 
@@ -882,8 +898,8 @@ class hpp_model(hpp_base):
         self.outputs = outputs
         return outputs
 
-    def test(self):
-        print("Success")
+    def test_2(self):
+        print("Success_2")
         return True
 
     def optimize(self):
@@ -942,6 +958,35 @@ class hpp_model(hpp_base):
             print(f"{out_var}: {value}")
 
         return optimized_values, optimized_outputs
+
+    def setup_optimization(self):
+        self.prob = om.Problem()
+        model = self.prob.model
+
+        # Add design variables
+        # Example: replace with real bounds
+        model.add_design_var('clearance', lower=0.0, upper=100.0)
+        model.add_design_var('sp', lower=0.0, upper=1000.0)        # Example
+        model.add_design_var('p_rated', lower=0.0, upper=10.0)     # Example
+        model.add_design_var('Nwt', lower=1, upper=10)             # Example
+        model.add_design_var('solar_MW', lower=0.0, upper=10.0)    # Example
+        # Add other design variables as needed...
+
+        # Define objectives
+        # Replace with your actual objective function
+        model.add_objective('some_objective_function')
+
+        # Set up the driver
+        self.prob.driver = om.SimpleGADriver()  # Use your preferred driver
+        self.prob.driver.options['pop_size'] = 100
+        self.prob.driver.options['max_gen'] = 50
+
+    def run_optimization(self):
+        self.prob.setup()
+        self.prob.run_driver()
+
+    def optimize(self):
+        self.run_optimization()
 
 # -----------------------------------------------------------------------
 # Auxiliar functions for ems modelling
