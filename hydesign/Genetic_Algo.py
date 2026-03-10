@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Feb 17 12:44:06 2023
+Created on March 9 2026
 
-@author: mikf & jumu
 """
 import os
 import time
@@ -39,183 +38,9 @@ from smt.surrogate_models import GEKPLS, KPLS, KPLSK, KRG
 # HyDesign imports
 from hydesign.examples import examples_filepath
 
-import warnings
-warnings.filterwarnings("ignore")
-
 smt_version = smt.__version__.split(".")
 smt_major, smt_minor = smt_version[:2]
 # import platform
-
-
-def LCB(sm, point):
-    """
-    Lower confidence bound optimization: minimize by using mu - 3*sigma
-    """
-    pred = sm.predict_values(point)
-    var = sm.predict_variances(point)
-    res = pred - 3.0 * np.sqrt(var)
-
-    return res
-
-
-def EI(sm, point, fmin=1e3):
-    """
-    Negative Expected improvement
-    """
-    pred = sm.predict_values(point)
-    sig = np.sqrt(sm.predict_variances(point))
-
-    args0 = (fmin - pred) / sig
-    args1 = (fmin - pred) * norm.cdf(args0)
-    args2 = sig * norm.pdf(args0)
-    ei = args1 + args2
-    return -ei
-
-
-def KStd(sm, point):
-    """
-    Lower confidence bound optimization: minimize by using mu - 3*sigma
-    """
-    res = np.sqrt(sm.predict_variances(point))
-    return res
-
-
-def KB(sm, point):
-    """
-    Mean GP process
-    """
-    res = sm.predict_values(point)
-    return res
-
-
-def get_sm(xdoe, ydoe, theta_bounds=[1e-06, 2e1], n_comp=4):
-    """
-    Function that trains the surrogate and uses it to predict on random input points
-
-    Parameters
-    ----------
-    xdoe: design of exeriments (DOE) in the inputs. [Ndoe, Ndims]
-    ydoe: model outputs at DOE. [Ndoe, 1]
-    theta_bounds: Bounds for the hyperparameter optimization.
-                  The theta parameter of the kernel function represnet an inverse squared length scale:
-                  the largest the number the faster the kernel decays to 0.  Suggestion: theta_bounds = [1e-3, 1e2].
-    n_comp: Number of components of a PCA applied to the hyperparameters; note that there is a theta per dimension.
-            Note that for problems with large number of dimensions (Ndims>10) might require a n_comp in [3,5]. Default value is n_comp = 1.
-    """
-    sm = KPLSK(
-        corr="squar_exp",
-        poly="linear",
-        theta0=[1e-2],
-        theta_bounds=theta_bounds,
-        n_comp=n_comp,
-        print_global=False,
-    )
-    sm.set_training_values(xdoe, ydoe)
-    sm.train()
-
-    return sm
-
-
-def eval_sm(sm, mixint, scaler=None, seed=0, npred=1e3, fmin=1e10):
-    """
-    Function that predicts the xepected improvement (EI) of the surrogate model based on random input points
-    """
-    sampling = get_sampling(mixint, seed=int(seed), criterion="c")
-    xpred = sampling(int(npred))
-    xpred = np.array(mixint.design_space.decode_values(xpred))
-
-    if scaler == None:
-        pass
-    else:
-        xpred = scaler.transform(xpred)
-
-    ypred_LB = EI(sm=sm, point=xpred, fmin=fmin)
-
-    return xpred, ypred_LB
-
-
-def opt_sm_EI(sm, mixint, x0, fmin=1e10, n_seed=0):
-    """
-    Function that optimizes the surrogate's expected improvement
-    """
-    ndims = mixint.get_unfolded_dimension()
-
-    func = lambda x: EI(sm, x[np.newaxis, :], fmin=fmin)
-
-    minimizer_kwargs = {
-        "method": "SLSQP",
-        "bounds": [(0, 1)] * ndims,
-        "options": {"maxiter": 20, "eps": 1e-3, "disp": False},
-    }
-
-    res = optimize.basinhopping(
-        func,
-        x0=x0,
-        niter=100,
-        stepsize=10,
-        minimizer_kwargs=minimizer_kwargs,
-        seed=n_seed,
-        target_accept_rate=0.5,
-        stepwise_factor=0.9,
-    )
-
-    # res = optimize.minimize(
-    #     fun = func,
-    #     x0 = x0,
-    #     method="SLSQP",
-    #     bounds=[(0,1)]*ndims,
-    #     options={
-    #         "maxiter": 100,
-    #         'eps':1e-3,
-    #         'disp':False
-    #     },
-    # )
-
-    return res.x.reshape([1, -1])
-
-
-def opt_sm(sm, mixint, x0, fmin=1e10):
-    """
-    Function that optimizes the surrogate based on lower confidence bound predictions
-    """
-
-    ndims = mixint.get_unfolded_dimension()
-    res = optimize.minimize(
-        fun=lambda x: KB(sm, x.reshape([1, ndims])),
-        jac=lambda x: np.stack(
-            [sm.predict_derivatives(x.reshape([1, ndims]), kx=i) for i in range(ndims)]
-        ).reshape([1, ndims]),
-        x0=x0.reshape([1, ndims]),
-        method="SLSQP",
-        bounds=[(0, 1)] * ndims,
-        options={"maxiter": 20, "eps": 1e-4, "disp": False},
-    )
-    return res.x.reshape([1, -1])
-
-
-def get_candiate_points(x, y, quantile=0.25, n_clusters=32):
-    """
-    Function that groups the surrogate evaluations bellow a quantile level (quantile) and
-    clusters them in n clusters (n_clusters) and returns the best input location (x) per
-    cluster for acutal model evaluation
-    """
-    yq = np.quantile(y, quantile)
-    ind_up = np.where(y < yq)[0]
-    xup = x[ind_up]
-    yup = y[ind_up]
-    kmeans = KMeans(
-        n_clusters=n_clusters,
-        random_state=0,
-        n_init=10,
-    ).fit(xup)
-    clust_id = kmeans.predict(xup)
-    xbest_per_clst = np.vstack(
-        [
-            xup[np.where(yup == np.min(yup[np.where(clust_id == i)[0]]))[0], :]
-            for i in range(n_clusters)
-        ]
-    )
-    return xbest_per_clst
 
 
 def extreme_around_point(x):
@@ -253,38 +78,6 @@ def get_limits(variables, design_var=[]):
     return np.array([variables[var_]["limits"] for var_ in design_var])
 
 
-def drop_duplicates(x, y, decimals=3):
-    x_rounded = np.around(x, decimals=decimals)
-    _, indices = np.unique(x_rounded, axis=0, return_index=True)
-    x_unique = x[indices, :]
-    y_unique = y[indices, :]
-    return x_unique, y_unique
-
-
-def concat_to_existing(x, y, xnew, ynew):
-    x_concat, y_concat = drop_duplicates(np.vstack([x, xnew]), np.vstack([y, ynew]))
-    return x_concat, y_concat
-
-
-def surrogate_optimization(inputs):  # Calling the optimization of the surrogate model
-    x, kwargs = inputs
-    mixint = get_mixint_context(kwargs["variables"], kwargs["n_seed"])
-    return opt_sm(kwargs["sm"], mixint, x, fmin=kwargs["yopt"][0, 0])
-
-
-def surrogate_evaluation(inputs):  # Evaluates the surrogate model
-    seed, kwargs = inputs
-    mixint = get_mixint_context(kwargs["variables"], kwargs["n_seed"])
-    return eval_sm(
-        kwargs["sm"],
-        mixint,
-        scaler=kwargs["scaler"],
-        seed=seed,  # different seed on each iteration
-        npred=kwargs["npred"],
-        fmin=kwargs["yopt"][0, 0],
-    )
-
-
 def get_xlimits(variables, design_var=[]):
     if len(design_var) == 0:
         design_var, fixed_var = get_design_vars(variables)
@@ -309,6 +102,20 @@ def cast_to_mixint(x, variables):
     return x
 
 
+def drop_duplicates(x, y, decimals=3):
+    x_rounded = np.around(x, decimals=decimals)
+    _, indices = np.unique(x_rounded, axis=0, return_index=True)
+    x_unique = x[indices, :]
+    y_unique = y[indices, :]
+    return x_unique, y_unique
+
+
+def concat_to_existing(x, y, xnew, ynew):
+    x_concat, y_concat = drop_duplicates(
+        np.vstack([x, xnew]), np.vstack([y, ynew]))
+    return x_concat, y_concat
+
+
 def get_mixint_context(variables, seed=None, criterion="maximin"):
     design_var, fixed_var = get_design_vars(variables)
     list_vars_doe = []
@@ -322,7 +129,8 @@ def get_mixint_context(variables, seed=None, criterion="maximin"):
             val_list = list(
                 np.arange(
                     variables[var_]["limits"][0],
-                    variables[var_]["limits"][1] + variables[var_]["resolution"],
+                    variables[var_]["limits"][1] +
+                    variables[var_]["resolution"],
                     variables[var_]["resolution"],
                     dtype=dtype,
                 )
@@ -386,7 +194,8 @@ def model_evaluation(inputs):  # Evaluates the model
     x_eval = expand_x_for_model_eval(x, kwargs)
     try:
         return np.array(
-            kwargs["opt_sign"] * hpp_m.evaluate(*x_eval[0, :])[kwargs["op_var_index"]]
+            kwargs["opt_sign"] *
+            hpp_m.evaluate(*x_eval[0, :])[kwargs["op_var_index"]]
         )
     except:
         print("There was an error with this case (or potentially memory error): ")
@@ -437,22 +246,25 @@ class ParallelEvaluator(Evaluator):
 
 
 def check_types(kwargs):
-    # kwargs = derive_example_info(kwargs)
+    # Only convert if key exists
     for x in ["num_batteries", "n_procs", "n_doe", "n_clusters", "n_seed", "max_iter"]:
-        kwargs[x] = int(kwargs[x])
+        if x in kwargs:
+            kwargs[x] = int(kwargs[x])
 
-    if kwargs["final_design_fn"] == None:
+    # Only set default if missing
+    if "final_design_fn" not in kwargs or kwargs["final_design_fn"] is None:
         kwargs["final_design_fn"] = (
             f'{kwargs["work_dir"]}design_hpp_{kwargs["name"]}_{kwargs["opt_var"]}.csv'
         )
 
     for x in ["opt_var", "final_design_fn"]:
-        kwargs[x] = str(kwargs[x])
+        if x in kwargs:
+            kwargs[x] = str(kwargs[x])
 
     return kwargs
 
 
-class EfficientGlobalOptimizationDriver(Driver):
+class GeneticAlgorithmDriver(Driver):
 
     def __init__(self, **kwargs):
         os.environ["OPENMDAO_USE_MPI"] = "0"
@@ -473,19 +285,8 @@ class EfficientGlobalOptimizationDriver(Driver):
             "time": [],
             "yopt": [],
         }
-        # -----------------
-        # INPUTS
-        # -----------------
 
-        ### paralel EGO parameters
-        # n_procs = 31 # number of parallel process. Max number of processors - 1.
-        # n_doe = n_procs*2
-        # n_clusters = int(n_procs/2)
-        # npred = 1e4
-        # npred = 1e5
-        # tol = 1e-6
-        # min_conv_iter = 3
-
+        # Input
         start_total = time.time()
 
         variables = kwargs["variables"]
@@ -497,22 +298,7 @@ class EfficientGlobalOptimizationDriver(Driver):
         scaler = MinMaxScaler()
         scaler.fit(xlimits.T)
 
-        # START Parallel-EGO optimization
-        # -------------------------------------------------------
-
-        # LHS intial doe
-        mixint = get_mixint_context(kwargs["variables"], kwargs["n_seed"])
-        sampling = get_sampling(mixint, seed=kwargs["n_seed"], criterion="maximin")
-        xdoe = sampling(kwargs["n_doe"])
-        xdoe = np.array(mixint.design_space.decode_values(xdoe))
-
-        # store intial DOE
-        self.xdoe = xdoe
-
-        xdoe = scaler.transform(xdoe)
-        # -----------------
         # HPP model
-        # -----------------
         name = kwargs["name"]
         print("\n\n\n")
         print(f"Sizing a HPP plant at {name}:")
@@ -551,6 +337,133 @@ class EfficientGlobalOptimizationDriver(Driver):
         kwargs["design_vars"] = design_vars
         kwargs["fixed_vars"] = fixed_vars
 
+        # GA parameters
+        pop_size = kwargs["n_doe"]
+        generations = kwargs["max_iter"]
+        mutation_sigma = 0.05
+        crossover_rate = 0.8
+
+        # ----------------------------
+        # Initial population (LHS)
+        # ----------------------------
+        mixint = get_mixint_context(kwargs["variables"], kwargs["n_seed"])
+        sampling = get_sampling(
+            mixint, seed=kwargs["n_seed"], criterion="maximin")
+
+        X = sampling(pop_size)
+        X = np.array(mixint.design_space.decode_values(X))
+        X = scaler.transform(X)
+
+        # Parallel evaluator
+        start = time.time()
+        n_procs = kwargs["n_procs"]
+        PE = ParallelEvaluator(n_procs=n_procs)
+
+        print("\nInitial population evaluation\n")
+
+        Y = PE.run_ydoe(fun=model_evaluation, x=X, **kwargs)
+
+        best_idx = np.argmin(Y)
+        xbest = X[[best_idx]]
+        ybest = Y[[best_idx]]
+
+        lapse = np.round((time.time() - start) / 60, 2)
+        print(f"Initial {X.shape[0]} simulations took {lapse} minutes")
+
+        print(f"Initial best value: {float(np.squeeze(ybest))}")
+
+        # GA main loop
+
+        for gen in range(generations):
+            start_gen = time.time()
+            # Selection (tournament)
+            parents = []
+            for _ in range(pop_size):
+                i, j = np.random.randint(pop_size, size=2)
+                winner = i if Y[i] < Y[j] else j
+                parents.append(X[winner])
+            parents = np.array(parents)
+
+            # Crossover
+            children = []
+            for i in range(0, pop_size, 2):
+                p1 = parents[i]
+                p2 = parents[(i + 1) % pop_size]
+                if np.random.rand() < crossover_rate:
+                    alpha = np.random.rand()
+                    child1 = alpha * p1 + (1 - alpha) * p2
+                    child2 = alpha * p2 + (1 - alpha) * p1
+                else:
+                    child1 = p1.copy()
+                    child2 = p2.copy()
+                children.append(child1)
+                children.append(child2)
+
+            children = np.array(children[:pop_size])
+
+            # Mutation
+            mutation = np.random.normal(0, mutation_sigma, children.shape)
+            children = children + mutation
+
+            children = np.clip(children, 0, 1)
+
+            # Cast integer / resolution variables
+            children_unscaled = scaler.inverse_transform(children)
+            children_unscaled = cast_to_mixint(children_unscaled, variables)
+            children = scaler.transform(children_unscaled)
+
+            # Evaluate offspring
+            Y_children = PE.run_ydoe(
+                fun=model_evaluation, x=children, **kwargs)
+
+            # Combine populations
+            X = np.vstack([X, children])
+            Y = np.vstack([Y, Y_children])
+
+            idx = np.argsort(Y.flatten())[:pop_size]
+
+            X = X[idx]
+            Y = Y[idx]
+
+            best_idx = np.argmin(Y)
+            xbest = X[[best_idx]]
+            ybest = Y[[best_idx]]
+
+            lapse = np.round((time.time() - start_gen) / 60, 2)
+
+            print(
+                f"Generation {gen+1} | Best {opt_var} = {float(np.squeeze(ybest)):.4E} | time {lapse} min"
+            )
+
+        # Final evaluation
+        xbest = scaler.inverse_transform(xbest)
+        xbest = expand_x_for_model_eval(xbest, kwargs)
+
+        outs = hpp_m.evaluate(*xbest[0, :])
+
+        hpp_m.print_design(xbest[0, :], outs)
+
+        lapse = np.round((time.time() - start_total) / 60, 2)
+
+        print(f"\nGA optimization finished in {lapse} minutes\n")
+
+        # Store results
+        design_df = pd.DataFrame(columns=list_vars, index=[kwargs["name"]])
+
+        for iv, var in enumerate(list_vars):
+            design_df[var] = xbest[0, iv]
+
+        for iv, var in enumerate(list_out_vars):
+            design_df[var] = outs[iv]
+
+        design_df["design obj"] = opt_var
+        design_df["opt time [min]"] = lapse
+
+        design_df.T.to_csv(kwargs["final_design_fn"])
+
+        self.result = design_df
+        self.hpp_m = hpp_m
+        '''
         # Evaluate model at initial doe
         start = time.time()
         n_procs = kwargs["n_procs"]
@@ -563,7 +476,7 @@ class EfficientGlobalOptimizationDriver(Driver):
         # Initialize iterative optimization
         itr = 0
         error = 1e10
-        conv_iter = 2
+        conv_iter = 0
         xopt = xdoe[[np.argmin(ydoe)], :]
         yopt = ydoe[[np.argmin(ydoe)], :]
         kwargs["yopt"] = yopt
@@ -622,7 +535,7 @@ class EfficientGlobalOptimizationDriver(Driver):
                 np.random.seed(
                     kwargs["n_seed"] * 100 + itr
                 )  # to have a different refinement per iteration
-                step = np.random.uniform(low=0.05, high=0.25)
+                step = np.random.uniform(low=0.05, high=0.25, size=1)
                 xopt_iter = perturbe_around_point(xopt, step=step)
             else:
                 # add extremes on each opt_var (one at a time) around the opt
@@ -689,7 +602,7 @@ class EfficientGlobalOptimizationDriver(Driver):
         # Re-Evaluate the last design to get all outputs
         outs = hpp_m.evaluate(*xopt[0, :])
         yopt = np.array(opt_sign * outs[[op_var_index]])[:, na]
-        # hpp_m.print_design(xopt[0, :], outs)
+        hpp_m.print_design(xopt[0, :], outs)
 
         recorder["time"].append(time.time())
         recorder["yopt"].append(float(np.squeeze(yopt)))
@@ -720,6 +633,7 @@ class EfficientGlobalOptimizationDriver(Driver):
         # store final model, to check or extract additional variables
         self.hpp_m = hpp_m
         self.recorder = recorder
+        '''
 
 
 if __name__ == "__main__":
@@ -749,21 +663,19 @@ if __name__ == "__main__":
         "num_batteries": 10,
         "work_dir": "./",
         "hpp_model": hpp_model,
-        # EGO Inputs
+        # Genetic algorithm inputs
         "opt_var": "NPV_over_CAPEX",
         "n_procs": 4,
-        "n_doe": 10,
-        "n_clusters": 4,  # total number of evals per iteration = n_clusters + 2*n_dims
+        "n_doe": 20,
         "n_seed": 0,
         "max_iter": 10,
         "final_design_fn": "hydesign_design_0.csv",
-        "npred": 2e4,
-        "tol": 1e-6,
-        "min_conv_iter": 3,
         # Design Variables
         "variables": {
-            "clearance [m]": {"var_type": "design", "limits": [10, 60], "types": "int"},
-            "sp [W/m2]": {"var_type": "design", "limits": [200, 360], "types": "int"},
+            # "clearance [m]": {"var_type": "design", "limits": [10, 60], "types": "int"},
+            "clearance [m]": {"var_type": "fixed", "value":28},
+            # "sp [W/m2]": {"var_type": "design", "limits": [200, 360], "types": "int"},
+            "sp [W/m2]": {"var_type": "fixed", "value": 360},
             "p_rated [MW]": {"var_type": "fixed", "value": 6},
             "Nwt": {"var_type": "fixed", "value": 200},
             "wind_MW_per_km2 [MW/km2]": {"var_type": "fixed", "value": 7},
@@ -786,20 +698,13 @@ if __name__ == "__main__":
             },
         },
     }
-    EGOD = EfficientGlobalOptimizationDriver(**inputs)
-    EGOD.run()
-    result = EGOD.result
+    GA = GeneticAlgorithmDriver(**inputs)
+    GA.run()
+    result = GA.result
 
-    import matplotlib.pyplot as plt
-
-    rec = EGOD.recorder
-    xs = np.asarray(rec["time"])
-    xs = xs - xs[0]
-    ys = np.asarray(rec["yopt"])
-    plt.plot(xs, ys)
-    plt.xlabel("time [s]")
-    plt.ylabel("yopt [-]")
+    print("\nOptimization result:\n")
+    print(result)
 
     # import pickle
     # with open('recording.pkl', 'wb') as f:
-    #     pickle.dump(EGOD.recorder, f)
+    #     pickle.dump(GA.recorder, f)
