@@ -432,7 +432,7 @@ class GeneticAlgorithmDriver(Driver):
             lapse = np.round((time.time() - start_gen) / 60, 2)
 
             print(
-                f"Generation {gen+1} | Best {opt_var} = {float(np.squeeze(ybest)):.4E} | time {lapse} min"
+                f"Generation {gen+1} | Best - {opt_var} = {float(np.squeeze(ybest)):.4E} | time {lapse} min"
             )
 
         # Final evaluation
@@ -666,14 +666,14 @@ if __name__ == "__main__":
         # Genetic algorithm inputs
         "opt_var": "NPV_over_CAPEX",
         "n_procs": 4,
-        "n_doe": 20,
+        "n_doe": 10,
         "n_seed": 0,
-        "max_iter": 10,
+        "max_iter": 3,
         "final_design_fn": "hydesign_design_0.csv",
         # Design Variables
         "variables": {
-            # "clearance [m]": {"var_type": "design", "limits": [10, 60], "types": "int"},
-            "clearance [m]": {"var_type": "fixed", "value":28},
+            "clearance [m]": {"var_type": "design", "limits": [10, 60], "types": "int"},
+            # "clearance [m]": {"var_type": "fixed", "value":28},
             # "sp [W/m2]": {"var_type": "design", "limits": [200, 360], "types": "int"},
             "sp [W/m2]": {"var_type": "fixed", "value": 360},
             "p_rated [MW]": {"var_type": "fixed", "value": 6},
