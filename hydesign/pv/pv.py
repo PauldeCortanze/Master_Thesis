@@ -90,13 +90,16 @@ class pvp_comp(ComponentWrapper):
     def __init__(
         self, weather_fn, N_time, latitude, longitude, altitude, tracking="single_axis"
     ):
-        model = pvp(weather_fn, N_time, latitude, longitude, altitude, tracking)
+        model = pvp(weather_fn, N_time, latitude,
+                    longitude, altitude, tracking)
         super().__init__(
             inputs=[
-                ("surface_tilt", {"val": 20, "desc": "Solar PV tilt angle in degs"}),
+                ("surface_tilt", {"val": 20.0, "units": "deg",
+                 "desc": "Solar PV tilt angle in degs"}),
                 (
                     "surface_azimuth",
-                    {"val": 180, "desc": "Solar PV azimuth angle in degs"},
+                    {"val": 180.0, "units": "deg",
+                        "desc": "Solar PV azimuth angle in degs"},
                 ),
                 ("DC_AC_ratio", {"desc": "DC/AC PV ratio"}),
                 (
@@ -119,7 +122,8 @@ class pvp_comp(ComponentWrapper):
             outputs=[
                 (
                     "solar_t",
-                    {"desc": "PV power time series", "units": "MW", "shape": [N_time]},
+                    {"desc": "PV power time series",
+                        "units": "MW", "shape": [N_time]},
                 ),
                 ("Apvp", {"desc": "Land use area of WPP", "units": "km**2"}),
             ],
@@ -173,7 +177,8 @@ class pvp_with_degradation_comp(ComponentWrapper):
         pv_deg_yr=[0, 25],
         pv_deg=[0, 25 * 1 / 100],
     ):
-        model = pvp_with_degradation(life_y, intervals_per_hour, pv_deg_yr, pv_deg)
+        model = pvp_with_degradation(
+            life_y, intervals_per_hour, pv_deg_yr, pv_deg)
         super().__init__(
             inputs=[
                 (
