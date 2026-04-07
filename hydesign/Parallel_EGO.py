@@ -140,7 +140,7 @@ def opt_sm_EI(sm, mixint, x0, fmin=1e10, n_seed=0):
     """
     ndims = mixint.get_unfolded_dimension()
 
-    func = lambda x: EI(sm, x[np.newaxis, :], fmin=fmin)
+    def func(x): return EI(sm, x[np.newaxis, :], fmin=fmin)
 
     minimizer_kwargs = {
         "method": "SLSQP",
@@ -183,7 +183,8 @@ def opt_sm(sm, mixint, x0, fmin=1e10):
     res = optimize.minimize(
         fun=lambda x: KB(sm, x.reshape([1, ndims])),
         jac=lambda x: np.stack(
-            [sm.predict_derivatives(x.reshape([1, ndims]), kx=i) for i in range(ndims)]
+            [sm.predict_derivatives(x.reshape([1, ndims]), kx=i)
+             for i in range(ndims)]
         ).reshape([1, ndims]),
         x0=x0.reshape([1, ndims]),
         method="SLSQP",
@@ -262,11 +263,13 @@ def drop_duplicates(x, y, decimals=3):
 
 
 def concat_to_existing(x, y, xnew, ynew):
-    x_concat, y_concat = drop_duplicates(np.vstack([x, xnew]), np.vstack([y, ynew]))
+    x_concat, y_concat = drop_duplicates(
+        np.vstack([x, xnew]), np.vstack([y, ynew]))
     return x_concat, y_concat
 
 
-def surrogate_optimization(inputs):  # Calling the optimization of the surrogate model
+# Calling the optimization of the surrogate model
+def surrogate_optimization(inputs):
     x, kwargs = inputs
     mixint = get_mixint_context(kwargs["variables"], kwargs["n_seed"])
     return opt_sm(kwargs["sm"], mixint, x, fmin=kwargs["yopt"][0, 0])
@@ -322,7 +325,8 @@ def get_mixint_context(variables, seed=None, criterion="maximin"):
             val_list = list(
                 np.arange(
                     variables[var_]["limits"][0],
-                    variables[var_]["limits"][1] + variables[var_]["resolution"],
+                    variables[var_]["limits"][1] +
+                    variables[var_]["resolution"],
                     variables[var_]["resolution"],
                     dtype=dtype,
                 )
@@ -386,7 +390,8 @@ def model_evaluation(inputs):  # Evaluates the model
     x_eval = expand_x_for_model_eval(x, kwargs)
     try:
         return np.array(
-            kwargs["opt_sign"] * hpp_m.evaluate(*x_eval[0, :])[kwargs["op_var_index"]]
+            kwargs["opt_sign"] *
+            hpp_m.evaluate(*x_eval[0, :])[kwargs["op_var_index"]]
         )
     except:
         print("There was an error with this case (or potentially memory error): ")
@@ -477,7 +482,7 @@ class EfficientGlobalOptimizationDriver(Driver):
         # INPUTS
         # -----------------
 
-        ### paralel EGO parameters
+        # paralel EGO parameters
         # n_procs = 31 # number of parallel process. Max number of processors - 1.
         # n_doe = n_procs*2
         # n_clusters = int(n_procs/2)
@@ -502,7 +507,8 @@ class EfficientGlobalOptimizationDriver(Driver):
 
         # LHS intial doe
         mixint = get_mixint_context(kwargs["variables"], kwargs["n_seed"])
-        sampling = get_sampling(mixint, seed=kwargs["n_seed"], criterion="maximin")
+        sampling = get_sampling(
+            mixint, seed=kwargs["n_seed"], criterion="maximin")
         xdoe = sampling(kwargs["n_doe"])
         xdoe = np.array(mixint.design_space.decode_values(xdoe))
 
@@ -579,8 +585,12 @@ class EfficientGlobalOptimizationDriver(Driver):
         recorder["yopt"].append(float(np.squeeze(yopt)))
         sm_args = {"n_comp": min(len(design_vars), 4)}
         sm_args.update(
-            {k: v for k, v in kwargs.items() if k in ["theta_bounds", "n_comp"]}
+            {k: v for k, v in kwargs.items() if k in [
+                "theta_bounds", "n_comp"]}
         )
+        save_results = []
+        start_total = time.time()
+
         while itr < kwargs["max_iter"]:
             # Iteration
             start_iter = time.time()
@@ -607,7 +617,8 @@ class EfficientGlobalOptimizationDriver(Driver):
             # request candidate points based on global evaluation of current surrogate
             # returns best designs in n_cluster of points with outputs bellow a quantile
             lapse = np.round((time.time() - start) / 60, 2)
-            print(f"Update sm and extract candidate points took {lapse} minutes")
+            print(
+                f"Update sm and extract candidate points took {lapse} minutes")
 
             # -------------------
             # Refinement
@@ -638,7 +649,8 @@ class EfficientGlobalOptimizationDriver(Driver):
 
             # run model at all candidate points
             start = time.time()
-            yopt_iter = PE.run_ydoe(fun=model_evaluation, x=xopt_iter, **kwargs)
+            yopt_iter = PE.run_ydoe(
+                fun=model_evaluation, x=xopt_iter, **kwargs)
 
             lapse = np.round((time.time() - start) / 60, 2)
             print(
@@ -646,12 +658,18 @@ class EfficientGlobalOptimizationDriver(Driver):
             )
 
             # update the db of model evaluations, xdoe and ydoe
-            xdoe_upd, ydoe_upd = concat_to_existing(xdoe, ydoe, xopt_iter, yopt_iter)
+            xdoe_upd, ydoe_upd = concat_to_existing(
+                xdoe, ydoe, xopt_iter, yopt_iter)
             xdoe_upd, ydoe_upd = drop_duplicates(xdoe_upd, ydoe_upd)
 
+            y_clean = np.array([
+                val if val is not None else np.inf
+                for val in ydoe_upd
+            ])
+
             # Drop yopt if it is not better than best design seen
-            xopt = xdoe_upd[[np.argmin(ydoe_upd)], :]
-            yopt = ydoe_upd[[np.argmin(ydoe_upd)], :]
+            xopt = xdoe_upd[[np.argmin(y_clean)], :]
+            yopt = ydoe_upd[[np.argmin(y_clean)], :]
 
             recorder["time"].append(time.time())
             recorder["yopt"].append(float(np.squeeze(yopt)))
@@ -675,6 +693,15 @@ class EfficientGlobalOptimizationDriver(Driver):
             print(f"  rel_yopt_change = {error:.2E}")
             print(f"Iteration {itr} took {lapse} minutes\n")
 
+            save_results.append({
+                "Iteration": itr,
+                "Eval": xdoe.shape[0],
+                "New simulation": xopt_iter.shape[0],
+                "Time": lapse,
+                "Solution (-NPV/CAPEX)": float(np.squeeze(yopt))
+            })
+
+
             if np.abs(error) < kwargs["tol"]:
                 conv_iter += 1
                 if conv_iter >= kwargs["min_conv_iter"]:
@@ -689,7 +716,7 @@ class EfficientGlobalOptimizationDriver(Driver):
         # Re-Evaluate the last design to get all outputs
         outs = hpp_m.evaluate(*xopt[0, :])
         yopt = np.array(opt_sign * outs[[op_var_index]])[:, na]
-        # hpp_m.print_design(xopt[0, :], outs)
+        hpp_m.print_design(xopt[0, :], outs)
 
         recorder["time"].append(time.time())
         recorder["yopt"].append(float(np.squeeze(yopt)))
@@ -720,6 +747,9 @@ class EfficientGlobalOptimizationDriver(Driver):
         # store final model, to check or extract additional variables
         self.hpp_m = hpp_m
         self.recorder = recorder
+
+        df = pd.DataFrame(save_results)
+        df.to_csv("Results.csv", index=False)
 
 
 if __name__ == "__main__":
@@ -764,25 +794,25 @@ if __name__ == "__main__":
         "variables": {
             "clearance [m]": {"var_type": "design", "limits": [10, 60], "types": "int"},
             "sp [W/m2]": {"var_type": "design", "limits": [200, 360], "types": "int"},
-            "p_rated [MW]": {"var_type": "fixed", "value": 6},
-            "Nwt": {"var_type": "fixed", "value": 200},
-            "wind_MW_per_km2 [MW/km2]": {"var_type": "fixed", "value": 7},
-            "solar_MW [MW]": {"var_type": "fixed", "value": 200},
-            "surface_tilt [deg]": {"var_type": "fixed", "value": 25},
+            "p_rated [MW]": {"var_type": "design", "limits": [5, 20], "types": "int"},
+            "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
+            "wind_MW_per_km2 [MW/km2]": {"var_type": "design", "limits": [1, 10], "types": "int"},
+            "solar_MW [MW]": {"var_type": "design", "limits": [30, 200], "types": "int"},
+            "surface_tilt [deg]": {"var_type": "design", "limits": [0, 90], "types": "float"},
             "surface_azimuth [deg]": {
                 "var_type": "design",
                 "limits": [150, 210],
-                "types": "float",
+                "types": "float"
             },
             "DC_AC_ratio": {
                 "var_type": "fixed",
-                "value": 1.0,
+                "value": 1.479,
             },
-            "b_P [MW]": {"var_type": "fixed", "value": 50},
-            "b_E_h [h]": {"var_type": "fixed", "value": 6},
+            "b_P [MW]": {"var_type": "design", "limits": [20, 35], "types": "int"},
+            "b_E_h [h]": {"var_type": "fixed", "value": 4},
             "cost_of_battery_P_fluct_in_peak_price_ratio": {
                 "var_type": "fixed",
-                "value": 10,
+                "value": 8.75,
             },
         },
     }

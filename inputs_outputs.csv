@@ -1,181 +1,181 @@
 0,1,type
-abl.hh,"{'desc': ""Turbine's hub height"", 'units': 'm', 'val': array([1.]), 'prom_name': 'hh'}",input
-battery_cost.b_P,"{'desc': 'Battery power capacity', 'units': 'MW', 'val': array([1.]), 'prom_name': 'b_P'}",input
-battery_cost.b_E,"{'desc': 'Battery energy storage capacity', 'units': None, 'val': array([1.]), 'prom_name': 'b_E'}",input
-battery_cost.SoH,"{'desc': 'Battery state of health at discretization levels', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'SoH'}",input
-battery_degradation.b_E_SOC_t,"{'desc': 'Battery energy SOC time series', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219001,)), 'prom_name': 'b_E_SOC_t'}",input
-battery_degradation.min_LoH,"{'desc': 'Minimum level of health before death of battery', 'units': None, 'val': array([1.]), 'prom_name': 'min_LoH'}",input
-battery_loss_in_capacity_due_to_temp.SoH,"{'desc': 'Battery state of health at discretization levels', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'SoH'}",input
-battery_with_reliability.b_t,"{'desc': '', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'b_t'}",input
-ems.wind_t,"{'desc': 'WPP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'wind_t'}",input
-ems.solar_t,"{'desc': 'PVP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'solar_t'}",input
-ems.price_t,"{'desc': 'Electricity price time series', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'price_t'}",input
-ems.b_P,"{'desc': 'Battery power capacity', 'units': 'MW', 'val': array([1.]), 'prom_name': 'b_P'}",input
-ems.b_E,"{'desc': 'Battery energy storage capacity', 'units': None, 'val': array([1.]), 'prom_name': 'b_E'}",input
-ems.G_MW,"{'desc': 'Grid capacity', 'units': 'MW', 'val': array([1.]), 'prom_name': 'G_MW'}",input
-ems.battery_depth_of_discharge,"{'desc': 'battery depth of discharge', 'units': 'MW', 'val': array([1.]), 'prom_name': 'battery_depth_of_discharge'}",input
-ems.battery_charge_efficiency,"{'desc': 'battery charge efficiency', 'units': None, 'val': array([1.]), 'prom_name': 'battery_charge_efficiency'}",input
-ems.peak_hr_quantile,"{'desc': 'Quantile of price tim sereis to define peak price hours (above this quantile).\nOnly used for peak production penalty and for cost of battery degradation.', 'units': None, 'val': array([1.]), 'prom_name': 'peak_hr_quantile'}",input
-ems.cost_of_battery_P_fluct_in_peak_price_ratio,"{'desc': 'cost of battery power fluctuations computed as a peak price ratio.', 'units': None, 'val': array([1.]), 'prom_name': 'cost_of_battery_P_fluct_in_peak_price_ratio'}",input
-ems.n_full_power_hours_expected_per_day_at_peak_price,"{'desc': 'Pnealty occurs if nunmber of full power hours expected per day at peak price are not reached.', 'units': None, 'val': array([1.]), 'prom_name': 'n_full_power_hours_expected_per_day_at_peak_price'}",input
-ems_long_term_operation.SoH,"{'desc': 'Battery state of health at discretization levels', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'SoH_all'}",input
-ems_long_term_operation.wind_t_ext_deg,"{'desc': 'Wind time series including degradation', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'wind_t_rel'}",input
-ems_long_term_operation.solar_t_ext_deg,"{'desc': 'PV time series including degradation', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'solar_t_rel'}",input
-ems_long_term_operation.wind_t_ext,"{'desc': 'WPP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'wind_t_ext'}",input
-ems_long_term_operation.solar_t_ext,"{'desc': 'PVP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'solar_t_ext'}",input
-ems_long_term_operation.price_t_ext,"{'desc': 'Electricity price time series', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'price_t_ext'}",input
-ems_long_term_operation.b_P,"{'desc': 'Battery power capacity', 'units': 'MW', 'val': array([1.]), 'prom_name': 'b_P'}",input
-ems_long_term_operation.b_E,"{'desc': 'Battery energy storage capacity', 'units': None, 'val': array([1.]), 'prom_name': 'b_E'}",input
-ems_long_term_operation.G_MW,"{'desc': 'Grid capacity', 'units': 'MW', 'val': array([1.]), 'prom_name': 'G_MW'}",input
-ems_long_term_operation.battery_depth_of_discharge,"{'desc': 'battery depth of discharge', 'units': 'MW', 'val': array([1.]), 'prom_name': 'battery_depth_of_discharge'}",input
-ems_long_term_operation.battery_charge_efficiency,"{'desc': 'battery charge efficiency', 'units': None, 'val': array([1.]), 'prom_name': 'battery_charge_efficiency'}",input
-ems_long_term_operation.hpp_curt_t,"{'desc': 'HPP curtailed power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'hpp_curt_t'}",input
-ems_long_term_operation.b_t,"{'desc': 'Battery charge/discharge power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'b_t_rel'}",input
-ems_long_term_operation.b_E_SOC_t,"{'desc': 'Battery energy SOC time series', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219001,)), 'prom_name': 'b_E_SOC_t'}",input
-ems_long_term_operation.peak_hr_quantile,"{'desc': 'Quantile of price time series to define peak price hours (above this quantile).\nOnly used for peak production penalty and for cost of battery degradation.', 'units': None, 'val': array([1.]), 'prom_name': 'peak_hr_quantile'}",input
-ems_long_term_operation.n_full_power_hours_expected_per_day_at_peak_price,"{'desc': 'Pnealty occurs if number of full power hours expected per day at peak price are not reached.', 'units': None, 'val': array([1.]), 'prom_name': 'n_full_power_hours_expected_per_day_at_peak_price'}",input
-ems_long_term_operation.load_min,"{'desc': 'Minimum electrical load to meet', 'units': None, 'val': array([1.]), 'prom_name': 'load_min'}",input
-finance.price_t_ext,"{'desc': '', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'price_t_ext'}",input
-finance.hpp_t_with_deg,"{'desc': '', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'hpp_t_with_deg'}",input
-finance.penalty_t,"{'desc': '', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'penalty_t_with_deg'}",input
-finance.CAPEX_w,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX_w'}",input
-finance.OPEX_w,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX_w'}",input
-finance.CAPEX_s,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX_s'}",input
-finance.OPEX_s,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX_s'}",input
-finance.CAPEX_b,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX_b'}",input
-finance.OPEX_b,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX_b'}",input
-finance.CAPEX_el,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX_sh'}",input
-finance.OPEX_el,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX_sh'}",input
-finance.wind_WACC,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'wind_WACC'}",input
-finance.solar_WACC,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'solar_WACC'}",input
-finance.battery_WACC,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'battery_WACC'}",input
-finance.tax_rate,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'tax_rate'}",input
-genericWT.hh,"{'desc': ""Turbine's hub height"", 'units': 'm', 'val': array([1.]), 'prom_name': 'hh'}",input
-genericWT.d,"{'desc': ""Turbine's diameter"", 'units': 'm', 'val': array([1.]), 'prom_name': 'd'}",input
-genericWT.p_rated,"{'desc': ""Turbine's rated power"", 'units': 'MW', 'val': array([1.]), 'prom_name': 'p_rated'}",input
-genericWake.Nwt,"{'desc': 'Number of wind turbines', 'units': None, 'val': array([1]), 'prom_name': 'Nwt'}",input
-genericWake.Awpp,"{'desc': 'Land use area of WPP', 'units': 'km**2', 'val': array([1.]), 'prom_name': 'Awpp'}",input
-genericWake.d,"{'desc': ""Turbine's diameter"", 'units': 'm', 'val': array([1.]), 'prom_name': 'd'}",input
-genericWake.p_rated,"{'desc': ""Turbine's rated power"", 'units': 'MW', 'val': array([1.]), 'prom_name': 'p_rated'}",input
-genericWake.ws,"{'desc': ""Turbine's ws"", 'units': 'm/s', 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+abl.hh,"{'val': array([1.]), 'desc': ""Turbine's hub height"", 'units': 'm', 'prom_name': 'hh'}",input
+battery_cost.b_P,"{'val': array([1.]), 'desc': 'Battery power capacity', 'units': 'MW', 'prom_name': 'b_P'}",input
+battery_cost.b_E,"{'val': array([1.]), 'desc': 'Battery energy storage capacity', 'units': None, 'prom_name': 'b_E'}",input
+battery_cost.SoH,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Battery state of health at discretization levels', 'units': None, 'prom_name': 'SoH'}",input
+battery_degradation.b_E_SOC_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219001,)), 'desc': 'Battery energy SOC time series', 'units': None, 'prom_name': 'b_E_SOC_t'}",input
+battery_degradation.min_LoH,"{'val': array([1.]), 'desc': 'Minimum level of health before death of battery', 'units': None, 'prom_name': 'min_LoH'}",input
+battery_loss_in_capacity_due_to_temp.SoH,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Battery state of health at discretization levels', 'units': None, 'prom_name': 'SoH'}",input
+battery_with_reliability.b_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': 'MW', 'prom_name': 'b_t'}",input
+ems.wind_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'WPP power time series', 'units': 'MW', 'prom_name': 'wind_t'}",input
+ems.solar_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'PVP power time series', 'units': 'MW', 'prom_name': 'solar_t'}",input
+ems.price_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'Electricity price time series', 'units': None, 'prom_name': 'price_t'}",input
+ems.b_P,"{'val': array([1.]), 'desc': 'Battery power capacity', 'units': 'MW', 'prom_name': 'b_P'}",input
+ems.b_E,"{'val': array([1.]), 'desc': 'Battery energy storage capacity', 'units': None, 'prom_name': 'b_E'}",input
+ems.G_MW,"{'val': array([1.]), 'desc': 'Grid capacity', 'units': 'MW', 'prom_name': 'G_MW'}",input
+ems.battery_depth_of_discharge,"{'val': array([1.]), 'desc': 'battery depth of discharge', 'units': 'MW', 'prom_name': 'battery_depth_of_discharge'}",input
+ems.battery_charge_efficiency,"{'val': array([1.]), 'desc': 'battery charge efficiency', 'units': None, 'prom_name': 'battery_charge_efficiency'}",input
+ems.peak_hr_quantile,"{'val': array([1.]), 'desc': 'Quantile of price tim sereis to define peak price hours (above this quantile).\nOnly used for peak production penalty and for cost of battery degradation.', 'units': None, 'prom_name': 'peak_hr_quantile'}",input
+ems.cost_of_battery_P_fluct_in_peak_price_ratio,"{'val': array([1.]), 'desc': 'cost of battery power fluctuations computed as a peak price ratio.', 'units': None, 'prom_name': 'cost_of_battery_P_fluct_in_peak_price_ratio'}",input
+ems.n_full_power_hours_expected_per_day_at_peak_price,"{'val': array([1.]), 'desc': 'Pnealty occurs if nunmber of full power hours expected per day at peak price are not reached.', 'units': None, 'prom_name': 'n_full_power_hours_expected_per_day_at_peak_price'}",input
+ems_long_term_operation.SoH,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Battery state of health at discretization levels', 'units': None, 'prom_name': 'SoH_all'}",input
+ems_long_term_operation.wind_t_ext_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Wind time series including degradation', 'units': 'MW', 'prom_name': 'wind_t_rel'}",input
+ems_long_term_operation.solar_t_ext_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'PV time series including degradation', 'units': 'MW', 'prom_name': 'solar_t_rel'}",input
+ems_long_term_operation.wind_t_ext,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'WPP power time series', 'units': 'MW', 'prom_name': 'wind_t_ext'}",input
+ems_long_term_operation.solar_t_ext,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'PVP power time series', 'units': 'MW', 'prom_name': 'solar_t_ext'}",input
+ems_long_term_operation.price_t_ext,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Electricity price time series', 'units': None, 'prom_name': 'price_t_ext'}",input
+ems_long_term_operation.b_P,"{'val': array([1.]), 'desc': 'Battery power capacity', 'units': 'MW', 'prom_name': 'b_P'}",input
+ems_long_term_operation.b_E,"{'val': array([1.]), 'desc': 'Battery energy storage capacity', 'units': None, 'prom_name': 'b_E'}",input
+ems_long_term_operation.G_MW,"{'val': array([1.]), 'desc': 'Grid capacity', 'units': 'MW', 'prom_name': 'G_MW'}",input
+ems_long_term_operation.battery_depth_of_discharge,"{'val': array([1.]), 'desc': 'battery depth of discharge', 'units': 'MW', 'prom_name': 'battery_depth_of_discharge'}",input
+ems_long_term_operation.battery_charge_efficiency,"{'val': array([1.]), 'desc': 'battery charge efficiency', 'units': None, 'prom_name': 'battery_charge_efficiency'}",input
+ems_long_term_operation.hpp_curt_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'HPP curtailed power time series', 'units': 'MW', 'prom_name': 'hpp_curt_t'}",input
+ems_long_term_operation.b_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Battery charge/discharge power time series', 'units': 'MW', 'prom_name': 'b_t_rel'}",input
+ems_long_term_operation.b_E_SOC_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219001,)), 'desc': 'Battery energy SOC time series', 'units': None, 'prom_name': 'b_E_SOC_t'}",input
+ems_long_term_operation.peak_hr_quantile,"{'val': array([1.]), 'desc': 'Quantile of price time series to define peak price hours (above this quantile).\nOnly used for peak production penalty and for cost of battery degradation.', 'units': None, 'prom_name': 'peak_hr_quantile'}",input
+ems_long_term_operation.n_full_power_hours_expected_per_day_at_peak_price,"{'val': array([1.]), 'desc': 'Pnealty occurs if number of full power hours expected per day at peak price are not reached.', 'units': None, 'prom_name': 'n_full_power_hours_expected_per_day_at_peak_price'}",input
+ems_long_term_operation.load_min,"{'val': array([1.]), 'desc': 'Minimum electrical load to meet', 'units': None, 'prom_name': 'load_min'}",input
+finance.price_t_ext,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': None, 'prom_name': 'price_t_ext'}",input
+finance.hpp_t_with_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': 'MW', 'prom_name': 'hpp_t_with_deg'}",input
+finance.penalty_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': None, 'prom_name': 'penalty_t_with_deg'}",input
+finance.CAPEX_w,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'CAPEX_w'}",input
+finance.OPEX_w,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'OPEX_w'}",input
+finance.CAPEX_s,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'CAPEX_s'}",input
+finance.OPEX_s,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'OPEX_s'}",input
+finance.CAPEX_b,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'CAPEX_b'}",input
+finance.OPEX_b,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'OPEX_b'}",input
+finance.CAPEX_el,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'CAPEX_sh'}",input
+finance.OPEX_el,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'OPEX_sh'}",input
+finance.wind_WACC,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'wind_WACC'}",input
+finance.solar_WACC,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'solar_WACC'}",input
+finance.battery_WACC,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'battery_WACC'}",input
+finance.tax_rate,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'tax_rate'}",input
+genericWT.hh,"{'val': array([1.]), 'desc': ""Turbine's hub height"", 'units': 'm', 'prom_name': 'hh'}",input
+genericWT.d,"{'val': array([1.]), 'desc': ""Turbine's diameter"", 'units': 'm', 'prom_name': 'd'}",input
+genericWT.p_rated,"{'val': array([1.]), 'desc': ""Turbine's rated power"", 'units': 'MW', 'prom_name': 'p_rated'}",input
+genericWake.Nwt,"{'val': array([1]), 'desc': 'Number of wind turbines', 'units': None, 'prom_name': 'Nwt'}",input
+genericWake.Awpp,"{'val': array([1.]), 'desc': 'Land use area of WPP', 'units': 'km**2', 'prom_name': 'Awpp'}",input
+genericWake.d,"{'val': array([1.]), 'desc': ""Turbine's diameter"", 'units': 'm', 'prom_name': 'd'}",input
+genericWake.p_rated,"{'val': array([1.]), 'desc': ""Turbine's rated power"", 'units': 'MW', 'prom_name': 'p_rated'}",input
+genericWake.ws,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'ws'}",input
-genericWake.pc,"{'desc': ""Turbine's power curve"", 'units': 'MW', 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': ""Turbine's ws"", 'units': 'm/s', 'prom_name': 'ws'}",input
+genericWake.pc,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'pc'}",input
-genericWake.ct,"{'desc': ""Turbine's ct curve"", 'units': None, 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': ""Turbine's power curve"", 'units': 'MW', 'prom_name': 'pc'}",input
+genericWake.ct,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'ct'}",input
-mapping.clearance,"{'desc': 'Distance from ground to blade tip', 'units': 'm', 'val': array([1.]), 'prom_name': 'clearance'}",input
-mapping.sp,"{'desc': 'Specific power', 'units': 'W/m**2', 'val': array([1.]), 'prom_name': 'sp'}",input
-mapping.p_rated,"{'desc': 'Rated power per turbine', 'units': 'MW', 'val': array([1.]), 'prom_name': 'p_rated'}",input
-mapping.Nwt,"{'desc': 'Number of wind turbines', 'units': None, 'val': array([1.]), 'prom_name': 'Nwt'}",input
-mapping.wind_MW_per_km2,"{'desc': 'Wind power density', 'units': 'MW/km**2', 'val': array([1.]), 'prom_name': 'wind_MW_per_km2'}",input
-mapping.solar_MW,"{'desc': 'Solar capacity', 'units': 'MW', 'val': array([1.]), 'prom_name': 'solar_MW'}",input
-mapping.surface_tilt,"{'desc': 'Solar panel tilt', 'units': 'deg', 'val': array([1.]), 'prom_name': 'surface_tilt'}",input
-mapping.surface_azimuth,"{'desc': 'Solar panel azimuth', 'units': 'deg', 'val': array([1.]), 'prom_name': 'surface_azimuth'}",input
-mapping.DC_AC_ratio,"{'desc': 'DC to AC ratio', 'units': None, 'val': array([1.]), 'prom_name': 'DC_AC_ratio'}",input
-mapping.b_P,"{'desc': 'Battery power', 'units': 'MW', 'val': array([1.]), 'prom_name': 'b_P'}",input
-mapping.b_E_h,"{'desc': 'Battery energy hours', 'units': 'h', 'val': array([1.]), 'prom_name': 'b_E_h'}",input
-mapping.cost_of_battery_P_fluct_in_peak_price_ratio,"{'desc': 'Battery cost ratio', 'units': None, 'val': array([1.]), 'prom_name': 'cost_of_battery_P_fluct_in_peak_price_ratio'}",input
-pvp.surface_tilt,"{'desc': 'Solar PV tilt angle in degs', 'units': 'deg', 'val': array([20.]), 'prom_name': 'surface_tilt'}",input
-pvp.surface_azimuth,"{'desc': 'Solar PV azimuth angle in degs', 'units': 'deg', 'val': array([180.]), 'prom_name': 'surface_azimuth'}",input
-pvp.DC_AC_ratio,"{'desc': 'DC/AC PV ratio', 'units': None, 'val': array([1.]), 'prom_name': 'DC_AC_ratio'}",input
-pvp.solar_MW,"{'desc': 'Solar PV plant installed capacity', 'units': 'MW', 'val': array([1]), 'prom_name': 'solar_MW'}",input
-pvp.land_use_per_solar_MW,"{'desc': 'Solar land use per solar MW', 'units': 'km**2/MW', 'val': array([1]), 'prom_name': 'land_use_per_solar_MW'}",input
-pvp_cost.solar_MW,"{'desc': 'AC nominal capacity of the PV plant', 'units': 'MW', 'val': array([1.]), 'prom_name': 'solar_MW'}",input
-pvp_cost.DC_AC_ratio,"{'desc': 'Ratio of DC power rating with respect AC rating of the PV plant', 'units': None, 'val': array([1.]), 'prom_name': 'DC_AC_ratio'}",input
-pvp_with_degradation.solar_t_ext,"{'desc': 'PVP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'solar_t_ext'}",input
-pvp_with_reliability.solar_t,"{'desc': '', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'solar_t_ext_deg'}",input
-shared_cost.G_MW,"{'desc': 'Grid capacity', 'units': 'MW', 'val': array([1.]), 'prom_name': 'G_MW'}",input
-shared_cost.Awpp,"{'desc': 'Land use area of WPP', 'units': 'km**2', 'val': array([1.]), 'prom_name': 'Awpp'}",input
-shared_cost.Apvp,"{'desc': 'Land use area of SP', 'units': 'km**2', 'val': array([1.]), 'prom_name': 'Apvp'}",input
-wpp.ws,"{'desc': ""Turbine's ws"", 'units': 'm/s', 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': ""Turbine's ct curve"", 'units': None, 'prom_name': 'ct'}",input
+mapping.clearance,"{'val': array([1.]), 'desc': 'Distance from ground to blade tip', 'units': 'm', 'prom_name': 'clearance'}",input
+mapping.sp,"{'val': array([1.]), 'desc': 'Specific power', 'units': 'W/m**2', 'prom_name': 'sp'}",input
+mapping.p_rated,"{'val': array([1.]), 'desc': 'Rated power per turbine', 'units': 'MW', 'prom_name': 'p_rated'}",input
+mapping.Nwt,"{'val': array([1.]), 'desc': 'Number of wind turbines', 'units': None, 'prom_name': 'Nwt'}",input
+mapping.wind_MW_per_km2,"{'val': array([1.]), 'desc': 'Wind power density', 'units': 'MW/km**2', 'prom_name': 'wind_MW_per_km2'}",input
+mapping.solar_MW,"{'val': array([1.]), 'desc': 'Solar capacity', 'units': 'MW', 'prom_name': 'solar_MW'}",input
+mapping.surface_tilt,"{'val': array([1.]), 'desc': 'Solar panel tilt', 'units': 'deg', 'prom_name': 'surface_tilt'}",input
+mapping.surface_azimuth,"{'val': array([1.]), 'desc': 'Solar panel azimuth', 'units': 'deg', 'prom_name': 'surface_azimuth'}",input
+mapping.DC_AC_ratio,"{'val': array([1.]), 'desc': 'DC to AC ratio', 'units': None, 'prom_name': 'DC_AC_ratio'}",input
+mapping.b_P,"{'val': array([1.]), 'desc': 'Battery power', 'units': 'MW', 'prom_name': 'b_P'}",input
+mapping.b_E_h,"{'val': array([1.]), 'desc': 'Battery energy hours', 'units': 'h', 'prom_name': 'b_E_h'}",input
+mapping.cost_of_battery_P_fluct_in_peak_price_ratio,"{'val': array([1.]), 'desc': 'Battery cost ratio', 'units': None, 'prom_name': 'cost_of_battery_P_fluct_in_peak_price_ratio'}",input
+pvp.surface_tilt,"{'val': array([20.]), 'desc': 'Solar PV tilt angle in degs', 'units': 'deg', 'prom_name': 'surface_tilt'}",input
+pvp.surface_azimuth,"{'val': array([180.]), 'desc': 'Solar PV azimuth angle in degs', 'units': 'deg', 'prom_name': 'surface_azimuth'}",input
+pvp.DC_AC_ratio,"{'val': array([1.]), 'desc': 'DC/AC PV ratio', 'units': None, 'prom_name': 'DC_AC_ratio'}",input
+pvp.solar_MW,"{'val': array([1]), 'desc': 'Solar PV plant installed capacity', 'units': 'MW', 'prom_name': 'solar_MW'}",input
+pvp.land_use_per_solar_MW,"{'val': array([1]), 'desc': 'Solar land use per solar MW', 'units': 'km**2/MW', 'prom_name': 'land_use_per_solar_MW'}",input
+pvp_cost.solar_MW,"{'val': array([1.]), 'desc': 'AC nominal capacity of the PV plant', 'units': 'MW', 'prom_name': 'solar_MW'}",input
+pvp_cost.DC_AC_ratio,"{'val': array([1.]), 'desc': 'Ratio of DC power rating with respect AC rating of the PV plant', 'units': None, 'prom_name': 'DC_AC_ratio'}",input
+pvp_with_degradation.solar_t_ext,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'PVP power time series', 'units': 'MW', 'prom_name': 'solar_t_ext'}",input
+pvp_with_reliability.solar_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': 'MW', 'prom_name': 'solar_t_ext_deg'}",input
+shared_cost.G_MW,"{'val': array([1.]), 'desc': 'Grid capacity', 'units': 'MW', 'prom_name': 'G_MW'}",input
+shared_cost.Awpp,"{'val': array([1.]), 'desc': 'Land use area of WPP', 'units': 'km**2', 'prom_name': 'Awpp'}",input
+shared_cost.Apvp,"{'val': array([1.]), 'desc': 'Land use area of SP', 'units': 'km**2', 'prom_name': 'Apvp'}",input
+wpp.ws,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'ws'}",input
-wpp.pcw,"{'desc': 'Wake affected power curve', 'units': None, 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': ""Turbine's ws"", 'units': 'm/s', 'prom_name': 'ws'}",input
+wpp.pcw,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'pcw'}",input
-wpp.wst,"{'desc': 'ws time series at the hub height', 'units': 'm/s', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'wst'}",input
-wpp_cost.Nwt,"{'desc': 'Number of wind turbines', 'units': None, 'val': array([1.]), 'prom_name': 'Nwt'}",input
-wpp_cost.hh,"{'desc': ""Turbine's hub height"", 'units': 'm', 'val': array([1.]), 'prom_name': 'hh'}",input
-wpp_cost.d,"{'desc': ""Turbine's diameter"", 'units': 'm', 'val': array([1.]), 'prom_name': 'd'}",input
-wpp_cost.p_rated,"{'desc': ""Turbine's rated power"", 'units': 'MW', 'val': array([1.]), 'prom_name': 'p_rated'}",input
-wpp_cost.wind_t,"{'desc': 'WPP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'wind_t'}",input
-wpp_with_degradation.ws,"{'desc': ""Turbine's ws"", 'units': 'm/s', 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': 'Wake affected power curve', 'units': None, 'prom_name': 'pcw'}",input
+wpp.wst,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'ws time series at the hub height', 'units': 'm/s', 'prom_name': 'wst'}",input
+wpp_cost.Nwt,"{'val': array([1.]), 'desc': 'Number of wind turbines', 'units': None, 'prom_name': 'Nwt'}",input
+wpp_cost.hh,"{'val': array([1.]), 'desc': ""Turbine's hub height"", 'units': 'm', 'prom_name': 'hh'}",input
+wpp_cost.d,"{'val': array([1.]), 'desc': ""Turbine's diameter"", 'units': 'm', 'prom_name': 'd'}",input
+wpp_cost.p_rated,"{'val': array([1.]), 'desc': ""Turbine's rated power"", 'units': 'MW', 'prom_name': 'p_rated'}",input
+wpp_cost.wind_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'WPP power time series', 'units': 'MW', 'prom_name': 'wind_t'}",input
+wpp_with_degradation.ws,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'ws'}",input
-wpp_with_degradation.pcw,"{'desc': 'Wake affected power curve', 'units': None, 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': ""Turbine's ws"", 'units': 'm/s', 'prom_name': 'ws'}",input
+wpp_with_degradation.pcw,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'pcw'}",input
-wpp_with_degradation.wst,"{'desc': 'ws time series at the hub height', 'units': 'm/s', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'wst'}",input
-wpp_with_reliability.wind_t,"{'desc': '', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'wind_t_ext_deg'}",input
-abl.wst,"{'desc': 'ws time series at the hub height', 'units': 'm/s', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'wst'}",output
-battery_cost.CAPEX_b,"{'desc': 'CAPEX of the storage unit', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX_b'}",output
-battery_cost.OPEX_b,"{'desc': 'OPEX of the storage unit', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX_b'}",output
-battery_degradation.SoH,"{'desc': 'Battery state of health at discretization levels', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'SoH'}",output
-battery_degradation.n_batteries,"{'desc': 'Number of batteries used.', 'units': None, 'val': array([1.]), 'prom_name': 'n_batteries'}",output
-battery_loss_in_capacity_due_to_temp.SoH_all,"{'desc': 'Battery state of health at discretization levels', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'SoH_all'}",output
-battery_with_reliability.b_t_rel,"{'desc': '', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'b_t_rel'}",output
-ems.wind_t_ext,"{'desc': 'WPP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'wind_t_ext'}",output
-ems.solar_t_ext,"{'desc': 'PVP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'solar_t_ext'}",output
-ems.price_t_ext,"{'desc': 'Electricity price time series', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'price_t_ext'}",output
-ems.hpp_t,"{'desc': 'HPP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'hpp_t'}",output
-ems.hpp_curt_t,"{'desc': 'HPP curtailed power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'hpp_curt_t'}",output
-ems.b_t,"{'desc': 'Battery charge/discharge power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'b_t'}",output
-ems.b_E_SOC_t,"{'desc': 'Battery energy SOC time series', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219001,)), 'prom_name': 'b_E_SOC_t'}",output
-ems.penalty_t,"{'desc': 'penalty for not reaching expected energy productin at peak hours', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'penalty_t'}",output
-ems_long_term_operation.hpp_t_with_deg,"{'desc': 'HPP power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'hpp_t_with_deg'}",output
-ems_long_term_operation.hpp_curt_t_with_deg,"{'desc': 'HPP curtailed power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'hpp_curt_t_with_deg'}",output
-ems_long_term_operation.b_t_with_deg,"{'desc': 'Battery charge/discharge power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'b_t_with_deg'}",output
-ems_long_term_operation.b_E_SOC_t_with_deg,"{'desc': 'Battery energy SOC time series', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219001,)), 'prom_name': 'b_E_SOC_t_with_deg'}",output
-ems_long_term_operation.penalty_t_with_deg,"{'desc': 'penalty for not reaching expected energy production at peak hours', 'units': None, 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'penalty_t_with_deg'}",output
-ems_long_term_operation.total_curtailment_with_deg,"{'desc': 'total curtailment in the lifetime after degradation', 'units': 'GW*h', 'val': array([1.]), 'prom_name': 'total_curtailment_with_deg'}",output
-ems_long_term_operation.total_curtailment,"{'desc': 'total curtailment in the lifetime', 'units': 'GW*h', 'val': array([1.]), 'prom_name': 'total_curtailment'}",output
-finance.CAPEX,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX'}",output
-finance.OPEX,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX'}",output
-finance.revenues,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'revenues'}",output
-finance.NPV,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'NPV'}",output
-finance.IRR,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'IRR'}",output
-finance.NPV_over_CAPEX,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'NPV_over_CAPEX'}",output
-finance.LCOE,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'LCOE'}",output
-finance.mean_AEP,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'mean_AEP'}",output
-finance.penalty_lifetime,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'penalty_lifetime'}",output
-finance.break_even_PPA_price,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'break_even_PPA_price'}",output
-genericWT.ws,"{'desc': ""Turbine's ws"", 'units': 'm/s', 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': 'Wake affected power curve', 'units': None, 'prom_name': 'pcw'}",input
+wpp_with_degradation.wst,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'ws time series at the hub height', 'units': 'm/s', 'prom_name': 'wst'}",input
+wpp_with_reliability.wind_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': 'MW', 'prom_name': 'wind_t_ext_deg'}",input
+abl.wst,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'ws time series at the hub height', 'units': 'm/s', 'prom_name': 'wst'}",output
+battery_cost.CAPEX_b,"{'val': array([1.]), 'desc': 'CAPEX of the storage unit', 'units': None, 'prom_name': 'CAPEX_b'}",output
+battery_cost.OPEX_b,"{'val': array([1.]), 'desc': 'OPEX of the storage unit', 'units': None, 'prom_name': 'OPEX_b'}",output
+battery_degradation.SoH,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Battery state of health at discretization levels', 'units': None, 'prom_name': 'SoH'}",output
+battery_degradation.n_batteries,"{'val': array([1.]), 'desc': 'Number of batteries used.', 'units': None, 'prom_name': 'n_batteries'}",output
+battery_loss_in_capacity_due_to_temp.SoH_all,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Battery state of health at discretization levels', 'units': None, 'prom_name': 'SoH_all'}",output
+battery_with_reliability.b_t_rel,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': 'MW', 'prom_name': 'b_t_rel'}",output
+ems.wind_t_ext,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'WPP power time series', 'units': 'MW', 'prom_name': 'wind_t_ext'}",output
+ems.solar_t_ext,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'PVP power time series', 'units': 'MW', 'prom_name': 'solar_t_ext'}",output
+ems.price_t_ext,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Electricity price time series', 'units': None, 'prom_name': 'price_t_ext'}",output
+ems.hpp_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'HPP power time series', 'units': 'MW', 'prom_name': 'hpp_t'}",output
+ems.hpp_curt_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'HPP curtailed power time series', 'units': 'MW', 'prom_name': 'hpp_curt_t'}",output
+ems.b_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Battery charge/discharge power time series', 'units': 'MW', 'prom_name': 'b_t'}",output
+ems.b_E_SOC_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219001,)), 'desc': 'Battery energy SOC time series', 'units': None, 'prom_name': 'b_E_SOC_t'}",output
+ems.penalty_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'penalty for not reaching expected energy productin at peak hours', 'units': None, 'prom_name': 'penalty_t'}",output
+ems_long_term_operation.hpp_t_with_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'HPP power time series', 'units': 'MW', 'prom_name': 'hpp_t_with_deg'}",output
+ems_long_term_operation.hpp_curt_t_with_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'HPP curtailed power time series', 'units': 'MW', 'prom_name': 'hpp_curt_t_with_deg'}",output
+ems_long_term_operation.b_t_with_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'Battery charge/discharge power time series', 'units': 'MW', 'prom_name': 'b_t_with_deg'}",output
+ems_long_term_operation.b_E_SOC_t_with_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219001,)), 'desc': 'Battery energy SOC time series', 'units': None, 'prom_name': 'b_E_SOC_t_with_deg'}",output
+ems_long_term_operation.penalty_t_with_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'penalty for not reaching expected energy production at peak hours', 'units': None, 'prom_name': 'penalty_t_with_deg'}",output
+ems_long_term_operation.total_curtailment_with_deg,"{'val': array([1.]), 'desc': 'total curtailment in the lifetime after degradation', 'units': 'GW*h', 'prom_name': 'total_curtailment_with_deg'}",output
+ems_long_term_operation.total_curtailment,"{'val': array([1.]), 'desc': 'total curtailment in the lifetime', 'units': 'GW*h', 'prom_name': 'total_curtailment'}",output
+finance.CAPEX,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'CAPEX'}",output
+finance.OPEX,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'OPEX'}",output
+finance.revenues,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'revenues'}",output
+finance.NPV,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'NPV'}",output
+finance.IRR,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'IRR'}",output
+finance.NPV_over_CAPEX,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'NPV_over_CAPEX'}",output
+finance.LCOE,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'LCOE'}",output
+finance.mean_AEP,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'mean_AEP'}",output
+finance.penalty_lifetime,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'penalty_lifetime'}",output
+finance.break_even_PPA_price,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'break_even_PPA_price'}",output
+genericWT.ws,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'ws'}",output
-genericWT.pc,"{'desc': ""Turbine's power curve"", 'units': 'MW', 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': ""Turbine's ws"", 'units': 'm/s', 'prom_name': 'ws'}",output
+genericWT.pc,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'pc'}",output
-genericWT.ct,"{'desc': ""Turbine's ct curve"", 'units': None, 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': ""Turbine's power curve"", 'units': 'MW', 'prom_name': 'pc'}",output
+genericWT.ct,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'ct'}",output
-genericWake.pcw,"{'desc': 'Wake affected power curve', 'units': None, 'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': ""Turbine's ct curve"", 'units': None, 'prom_name': 'ct'}",output
+genericWake.pcw,"{'val': array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
-       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'prom_name': 'pcw'}",output
-mapping.hh,"{'desc': 'Hub height', 'units': 'm', 'val': array([80.]), 'prom_name': 'hh'}",output
-mapping.d,"{'desc': 'Rotor diameter', 'units': 'm', 'val': array([100.]), 'prom_name': 'd'}",output
-mapping.Awpp,"{'desc': 'Wind farm area', 'units': 'km**2', 'val': array([20.]), 'prom_name': 'Awpp'}",output
-mapping.b_E,"{'desc': 'Battery energy', 'units': None, 'val': array([300.]), 'prom_name': 'b_E'}",output
-mapping.p_rated_out,"{'desc': '', 'units': 'MW', 'val': array([5.]), 'prom_name': 'p_rated_out'}",output
-mapping.Nwt_out,"{'desc': '', 'units': None, 'val': array([100]), 'prom_name': 'Nwt_out'}",output
-mapping.solar_MW_out,"{'desc': '', 'units': 'MW', 'val': array([100.]), 'prom_name': 'solar_MW_out'}",output
-mapping.surface_tilt_out,"{'desc': '', 'units': 'deg', 'val': array([25.]), 'prom_name': 'surface_tilt_out'}",output
-mapping.surface_azimuth_out,"{'desc': '', 'units': 'deg', 'val': array([180.]), 'prom_name': 'surface_azimuth_out'}",output
-mapping.DC_AC_ratio_out,"{'desc': '', 'units': None, 'val': array([1.]), 'prom_name': 'DC_AC_ratio_out'}",output
-mapping.b_P_out,"{'desc': '', 'units': 'MW', 'val': array([50.]), 'prom_name': 'b_P_out'}",output
-mapping.cost_of_battery_P_fluct_in_peak_price_ratio_out,"{'desc': '', 'units': None, 'val': array([10.]), 'prom_name': 'cost_of_battery_P_fluct_in_peak_price_ratio_out'}",output
-pvp.solar_t,"{'desc': 'PV power time series', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'solar_t'}",output
-pvp.Apvp,"{'desc': 'Land use area of WPP', 'units': 'km**2', 'val': array([1.]), 'prom_name': 'Apvp'}",output
-pvp_cost.CAPEX_s,"{'desc': 'CAPEX of the PV power plant', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX_s'}",output
-pvp_cost.OPEX_s,"{'desc': 'OPEX of the PV power plant', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX_s'}",output
-pvp_with_degradation.solar_t_ext_deg,"{'desc': 'PVP power time series with degradation', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'solar_t_ext_deg'}",output
-pvp_with_reliability.solar_t_rel,"{'desc': '', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'solar_t_rel'}",output
-shared_cost.CAPEX_sh,"{'desc': 'CAPEX electrical infrastructure/ land rent', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX_sh'}",output
-shared_cost.OPEX_sh,"{'desc': 'OPEX electrical infrastructure/ land rent', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX_sh'}",output
-wpp.wind_t,"{'desc': 'power time series at the hub height', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'prom_name': 'wind_t'}",output
-wpp_cost.CAPEX_w,"{'desc': 'CAPEX of the wind power plant', 'units': None, 'val': array([1.]), 'prom_name': 'CAPEX_w'}",output
-wpp_cost.OPEX_w,"{'desc': 'OPEX of the wind power plant', 'units': None, 'val': array([1.]), 'prom_name': 'OPEX_w'}",output
-wpp_with_degradation.wind_t_ext_deg,"{'desc': 'power time series with degradation', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'wind_t_ext_deg'}",output
-wpp_with_reliability.wind_t_rel,"{'desc': '', 'units': 'MW', 'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'prom_name': 'wind_t_rel'}",output
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]), 'desc': 'Wake affected power curve', 'units': None, 'prom_name': 'pcw'}",output
+mapping.hh,"{'val': array([80.]), 'desc': 'Hub height', 'units': 'm', 'prom_name': 'hh'}",output
+mapping.d,"{'val': array([100.]), 'desc': 'Rotor diameter', 'units': 'm', 'prom_name': 'd'}",output
+mapping.Awpp,"{'val': array([20.]), 'desc': 'Wind farm area', 'units': 'km**2', 'prom_name': 'Awpp'}",output
+mapping.b_E,"{'val': array([300.]), 'desc': 'Battery energy', 'units': None, 'prom_name': 'b_E'}",output
+mapping.p_rated_out,"{'val': array([5.]), 'desc': '', 'units': 'MW', 'prom_name': 'p_rated_out'}",output
+mapping.Nwt_out,"{'val': array([100]), 'desc': '', 'units': None, 'prom_name': 'Nwt_out'}",output
+mapping.solar_MW_out,"{'val': array([100.]), 'desc': '', 'units': 'MW', 'prom_name': 'solar_MW_out'}",output
+mapping.surface_tilt_out,"{'val': array([25.]), 'desc': '', 'units': 'deg', 'prom_name': 'surface_tilt_out'}",output
+mapping.surface_azimuth_out,"{'val': array([180.]), 'desc': '', 'units': 'deg', 'prom_name': 'surface_azimuth_out'}",output
+mapping.DC_AC_ratio_out,"{'val': array([1.]), 'desc': '', 'units': None, 'prom_name': 'DC_AC_ratio_out'}",output
+mapping.b_P_out,"{'val': array([50.]), 'desc': '', 'units': 'MW', 'prom_name': 'b_P_out'}",output
+mapping.cost_of_battery_P_fluct_in_peak_price_ratio_out,"{'val': array([10.]), 'desc': '', 'units': None, 'prom_name': 'cost_of_battery_P_fluct_in_peak_price_ratio_out'}",output
+pvp.solar_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'PV power time series', 'units': 'MW', 'prom_name': 'solar_t'}",output
+pvp.Apvp,"{'val': array([1.]), 'desc': 'Land use area of WPP', 'units': 'km**2', 'prom_name': 'Apvp'}",output
+pvp_cost.CAPEX_s,"{'val': array([1.]), 'desc': 'CAPEX of the PV power plant', 'units': None, 'prom_name': 'CAPEX_s'}",output
+pvp_cost.OPEX_s,"{'val': array([1.]), 'desc': 'OPEX of the PV power plant', 'units': None, 'prom_name': 'OPEX_s'}",output
+pvp_with_degradation.solar_t_ext_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'PVP power time series with degradation', 'units': 'MW', 'prom_name': 'solar_t_ext_deg'}",output
+pvp_with_reliability.solar_t_rel,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': 'MW', 'prom_name': 'solar_t_rel'}",output
+shared_cost.CAPEX_sh,"{'val': array([1.]), 'desc': 'CAPEX electrical infrastructure/ land rent', 'units': None, 'prom_name': 'CAPEX_sh'}",output
+shared_cost.OPEX_sh,"{'val': array([1.]), 'desc': 'OPEX electrical infrastructure/ land rent', 'units': None, 'prom_name': 'OPEX_sh'}",output
+wpp.wind_t,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(8760,)), 'desc': 'power time series at the hub height', 'units': 'MW', 'prom_name': 'wind_t'}",output
+wpp_cost.CAPEX_w,"{'val': array([1.]), 'desc': 'CAPEX of the wind power plant', 'units': None, 'prom_name': 'CAPEX_w'}",output
+wpp_cost.OPEX_w,"{'val': array([1.]), 'desc': 'OPEX of the wind power plant', 'units': None, 'prom_name': 'OPEX_w'}",output
+wpp_with_degradation.wind_t_ext_deg,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': 'power time series with degradation', 'units': 'MW', 'prom_name': 'wind_t_ext_deg'}",output
+wpp_with_reliability.wind_t_rel,"{'val': array([1., 1., 1., ..., 1., 1., 1.], shape=(219000,)), 'desc': '', 'units': 'MW', 'prom_name': 'wind_t_rel'}",output

@@ -360,7 +360,7 @@ class hpp_base:
             design_df = self.evaluation_in_df(x_opt, outs)
         design_df.to_csv(f"{name_file}.csv")
 
-    def get_prob(comps):    
+    def get_prob(comps):
         prob = om.Problem()
 
         # # Create IndepVarComp
@@ -394,8 +394,9 @@ class hpp_base:
                 )
 
         prob.model.set_input_defaults('surface_tilt', val=28.125, units='deg')
-        prob.model.set_input_defaults('surface_azimuth', val=191.25, units='deg')
-        
+        prob.model.set_input_defaults(
+            'surface_azimuth', val=191.25, units='deg')
+
         return prob
 
     def load_simulation_parameters(self, sim_pars_fn, defaults, kwargs):
@@ -693,11 +694,13 @@ class hpp_model(hpp_base):
         self.prob = prob
 
         # Collect inputs
-        inputs = prob.model.list_inputs(print_arrays=False, units=True, desc=True, prom_name=True)
+        inputs = prob.model.list_inputs(
+            print_arrays=False, units=True, desc=True, prom_name=True)
         inputs_df = pd.DataFrame(inputs)
 
         # Collect outputs
-        outputs = prob.model.list_outputs(print_arrays=False, units=True, desc=True, prom_name=True)
+        outputs = prob.model.list_outputs(
+            print_arrays=False, units=True, desc=True, prom_name=True)
         outputs_df = pd.DataFrame(outputs)
 
         # Add a column to distinguish inputs and outputs
@@ -989,6 +992,7 @@ class hpp_model(hpp_base):
         model = self.prob.model
 
         # Example design variables
+        type_dic = {}
         for var in self.variables.keys():
             if self.variables[var]['var_type'] == 'design':
                 lower, upper = self.variables[var]['limits']
@@ -996,15 +1000,19 @@ class hpp_model(hpp_base):
                     model.add_design_var(var, lower=lower, upper=upper)
                 else:
                     model.add_design_var(var, lower=lower, upper=upper)
+                    # type_dic[var] = 4  # Float
 
         # Objective
         model.add_objective('NPV_over_CAPEX', scaler=-1)
 
         # Set up the driver
         self.prob.driver = om.SimpleGADriver()  # or other driver
-        self.prob.driver.options['pop_size'] = 5
-        self.prob.driver.options['max_gen'] = 2
+        self.prob.driver.options['pop_size'] = 10
+        self.prob.driver.options['max_gen'] = 8
         self.prob.set_solver_print(level=2)
+        # self.prob.driver.options['bits'] = type_dic
+        # self.prob.driver.options['Pc'] = 0.2
+        # self.prob.driver.options['Pm'] = 0.2
 
         self.prob.setup()
         for var in self.variables.keys():
@@ -1039,8 +1047,21 @@ class hpp_model(hpp_base):
         cr = om.CaseReader(self.filepath)
         cases = cr.get_cases('driver')
 
-        df = pd.DataFrame([case.outputs for case in cases])
-        df.to_csv(f'../../hpp_assembly_GA_Driver_out/all_outputs_{self.timestamp}.csv', index=False)
+        rows = []
+        cases = list(cases)
+        t0 = cases[0].timestamp
+
+        for i, case in enumerate(cases):
+            row = dict(case.outputs)
+            # Convert to minutes
+            row["timestamp"] = case.timestamp / 60
+            # Relative time (also in minutes)
+            row["time_relative"] = (case.timestamp - t0) / 60
+            rows.append(row)
+
+        df = pd.DataFrame(rows)
+        df.to_csv(
+            f'../../hpp_assembly_GA_Driver_out/all_outputs_{self.timestamp}.csv', index=False)
 
         results = {}
         for var in self.variables.keys():
@@ -1106,28 +1127,30 @@ if __name__ == "__main__":
         # "clearance": {"var_type": "fixed", "value": 55},
         "sp": {"var_type": "design", "limits": [200, 360], "types": "int"},
         # "sp": {"var_type": "fixed", "value": 257},
-        "p_rated": {"var_type": "design", "limits": [5, 20], "types": "int"},
-        # "p_rated": {"var_type": "fixed", "value": 10},
-        "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
-        # "Nwt": {"var_type": "fixed", "value": 10},
-        "wind_MW_per_km2": {"var_type": "design", "limits": [1, 10], "types": "float"},
-        # "wind_MW_per_km2": {"var_type": "fixed", "value": 5.917},
+        # "p_rated": {"var_type": "design", "limits": [5, 20], "types": "int"},
+        "p_rated": {"var_type": "fixed", "value": 18},
+        # "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
+        "Nwt": {"var_type": "fixed", "value": 12},
+        # "wind_MW_per_km2": {"var_type": "design", "limits": [1, 10], "types": "float"},
+        "wind_MW_per_km2": {"var_type": "fixed", "value": 9},
         "solar_MW": {"var_type": "design", "limits": [30, 200], "types": "float"},
-        #"solar_MW": {"var_type": "fixed", "value": 75},
-        "surface_tilt": {"var_type": "design", "limits": [0, 90], "types": "float"},
-        # "surface_tilt": {"var_type": "fixed", "value": 28.125},
-        "surface_azimuth": {
-            "var_type": "design",
-            "limits": [150, 210],
-            "types": "float",
-        },
-        # "surface_azimuth": {"var_type": "fixed", "value": 191.25},
+        # "solar_MW": {"var_type": "fixed", "value": 75},
+        # "surface_tilt": {"var_type": "design", "limits": [0, 90], "types": "float"},
+        "surface_tilt": {"var_type": "fixed", "value": 28.125},
+        # "surface_azimuth": {
+        #     "var_type": "design",
+        #     "limits": [150, 210],
+        #     "types": "float",
+        # },
+        "surface_azimuth": {"var_type": "fixed", "value": 191},
         "DC_AC_ratio": {
             "var_type": "fixed",
             "value": 1.479,
         },
-        "b_P": {"var_type": "fixed", "value": 27},
+        "b_P": {"var_type": "fixed", "value": 20},
+        # "b_P": {"var_type": "design", "limits": [20, 35], "types": "int"},
         "b_E_h": {"var_type": "fixed", "value": 4},
+        # "b_E_h": {"var_type": "design", "limits": [2, 10], "types": "float"},
         "cost_of_battery_P_fluct_in_peak_price_ratio": {
             "var_type": "fixed",
             "value": 8.75,
@@ -1146,24 +1169,23 @@ if __name__ == "__main__":
     start = time.time()
 
     x = [
-        55.0,
-        236.0,
-        10.000000000000002,
         10.0,
-        5.916666666666667,
-        75.0,
-        28.125,
-        191.25,
-        1.4791666666666665,
-        27.0,
-        4.0,
+        200.0,
+        5.0,
+        5,
+        1,
+        30,
+        28,
+        191,
+        1.479,
+        27,
+        4,
         8.75,
     ]
 
     # outs = hpp.evaluate(*x)
     # hpp.print_design()
 
-    # hpp.setup_optimization()
     hpp.run_optimization()
 
     end = time.time()
