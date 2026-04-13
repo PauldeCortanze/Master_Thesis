@@ -693,6 +693,7 @@ class hpp_model(hpp_base):
 
         self.prob = prob
 
+        '''
         # Collect inputs
         inputs = prob.model.list_inputs(
             print_arrays=False, units=True, desc=True, prom_name=True)
@@ -713,6 +714,7 @@ class hpp_model(hpp_base):
         # Save to CSV
         combined_df.to_csv("inputs_outputs.csv", index=False)
         print(f"Inputs and outputs saved to inputs_outputs.csv")
+        '''
 
         # self.setup_optimization()
 
@@ -1006,19 +1008,41 @@ class hpp_model(hpp_base):
         model.add_objective('NPV_over_CAPEX', scaler=-1)
 
         # Set up the driver
-        self.prob.driver = om.SimpleGADriver()  # or other driver
-        self.prob.driver.options['pop_size'] = 10
-        self.prob.driver.options['max_gen'] = 8
-        self.prob.set_solver_print(level=2)
+        self.prob.driver = om.pyOptSparseDriver()
+        self.prob.driver.options['optimizer'] = 'NSGA2'
+        self.prob.driver.opt_settings['PopSize'] = 12
+        self.prob.driver.opt_settings['maxGen'] = 10
+
+        # self.prob.set_solver_print(level=2)
         # self.prob.driver.options['bits'] = type_dic
         # self.prob.driver.options['Pc'] = 0.2
         # self.prob.driver.options['Pm'] = 0.2
 
+        # Define the path for the recorder
+        output_dir = 'optimization_results'
+        os.makedirs(output_dir, exist_ok=True)
+        self.filepath = os.path.join(
+            output_dir, f"history_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.sql")
+        self.filepath_csv = os.path.join(
+            output_dir, f"history_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv")
+
+        # Attach recorder to the DRIVER
+        recorder = om.SqliteRecorder(self.filepath)
+        self.prob.driver.add_recorder(recorder)
+
+        # Tell the driver exactly what to record
+        self.prob.driver.recording_options['record_objectives'] = True
+        self.prob.driver.recording_options['record_desvars'] = True
+        self.prob.driver.recording_options['includes'] = [
+            '*']  # Captures all outputs
+
         self.prob.setup()
+
         for var in self.variables.keys():
             if self.variables[var]['var_type'] == 'fixed':
                 self.prob.set_val(var, self.variables[var]['value'])
 
+        '''
         output_dir = '../../hpp_assembly_GA_Driver_out'
         os.makedirs(output_dir, exist_ok=True)
 
@@ -1037,6 +1061,7 @@ class hpp_model(hpp_base):
         self.prob.driver.recording_options['record_constraints'] = True
         self.prob.driver.recording_options['includes'] = [
             '*']  # optional but useful
+        '''
 
     def run_optimization(self):
         prob = self.prob
@@ -1044,6 +1069,8 @@ class hpp_model(hpp_base):
         prob.run_driver()
         # prob.cleanup()
 
+        self.save_nsga2_results(self.filepath, self.filepath_csv)
+        '''
         cr = om.CaseReader(self.filepath)
         cases = cr.get_cases('driver')
 
@@ -1062,6 +1089,7 @@ class hpp_model(hpp_base):
         df = pd.DataFrame(rows)
         df.to_csv(
             f'../../hpp_assembly_GA_Driver_out/all_outputs_{self.timestamp}.csv', index=False)
+        '''
 
         results = {}
         for var in self.variables.keys():
@@ -1075,12 +1103,63 @@ class hpp_model(hpp_base):
 
         print(f'- NPV_over_CAPEX: {results["objective"]}')
 
-        best_objectives = []
-        for case in cases:
-            obj = case.get_objectives()['NPV_over_CAPEX']
-            best_objectives.append(obj)
+        # best_objectives = []
+        # for case in cases:
+        #     obj = case.get_objectives()['NPV_over_CAPEX']
+        #     best_objectives.append(obj)
 
-        print("Evolution:", best_objectives)
+        # print("Evolution:", best_objectives)
+
+    def save_nsga2_results(self, sqlite_path, csv_path):
+        import openmdao.api as om
+        import pandas as pd
+        import numpy as np
+        
+        # 1. Load the reader
+        cr = om.CaseReader(sqlite_path)
+        
+        # 2. Get cases from the driver
+        # We fetch the identifiers or objects
+        driver_cases = cr.get_cases('driver')
+        
+        data = []
+        for i, entry in enumerate(driver_cases):
+            # Resolve the case object
+            if isinstance(entry, str):
+                case = cr.get_case(entry)
+            else:
+                case = entry
+            
+            # Extract basic data
+            row = {
+                'iteration': i,
+                'timestamp': case.timestamp,
+                'success': case.success
+            }
+            
+            # Extract Objectives (NPV_over_CAPEX)
+            for name, val in case.get_objectives().items():
+                # Handle numpy arrays or scalars
+                row[name] = val[0] if isinstance(val, (np.ndarray, list)) else val
+                
+            # Extract Design Variables (clearance, sp, solar_MW)
+            for name, val in case.get_design_vars().items():
+                row[name] = val[0] if isinstance(val, (np.ndarray, list)) else val
+                
+            data.append(row)
+        
+        if not data:
+            print("Warning: No cases found in the recorder. Is your driver recording objectives?")
+            return
+
+        df = pd.DataFrame(data)
+        
+        # Calculate time relative to the first iteration
+        df['time_sec'] = df['timestamp'] - df['timestamp'].iloc[0]
+        
+        # Save to CSV
+        df.to_csv(csv_path, index=False)
+        print(f"Successfully saved {len(df)} iterations to {csv_path}")
 
 # -----------------------------------------------------------------------
 # Auxiliar functions for ems modelling
@@ -1127,22 +1206,22 @@ if __name__ == "__main__":
         # "clearance": {"var_type": "fixed", "value": 55},
         "sp": {"var_type": "design", "limits": [200, 360], "types": "int"},
         # "sp": {"var_type": "fixed", "value": 257},
-        # "p_rated": {"var_type": "design", "limits": [5, 20], "types": "int"},
-        "p_rated": {"var_type": "fixed", "value": 18},
-        # "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
-        "Nwt": {"var_type": "fixed", "value": 12},
-        # "wind_MW_per_km2": {"var_type": "design", "limits": [1, 10], "types": "float"},
-        "wind_MW_per_km2": {"var_type": "fixed", "value": 9},
+        "p_rated": {"var_type": "design", "limits": [5, 20], "types": "int"},
+        # "p_rated": {"var_type": "fixed", "value": 18},
+        "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
+        # "Nwt": {"var_type": "fixed", "value": 12},
+        "wind_MW_per_km2": {"var_type": "design", "limits": [1, 10], "types": "float"},
+        # "wind_MW_per_km2": {"var_type": "fixed", "value": 9},
         "solar_MW": {"var_type": "design", "limits": [30, 200], "types": "float"},
         # "solar_MW": {"var_type": "fixed", "value": 75},
-        # "surface_tilt": {"var_type": "design", "limits": [0, 90], "types": "float"},
-        "surface_tilt": {"var_type": "fixed", "value": 28.125},
-        # "surface_azimuth": {
-        #     "var_type": "design",
-        #     "limits": [150, 210],
-        #     "types": "float",
-        # },
-        "surface_azimuth": {"var_type": "fixed", "value": 191},
+        "surface_tilt": {"var_type": "design", "limits": [0, 90], "types": "float"},
+        # "surface_tilt": {"var_type": "fixed", "value": 28.125},
+        "surface_azimuth": {
+            "var_type": "design",
+            "limits": [150, 210],
+            "types": "float",
+        },
+        # "surface_azimuth": {"var_type": "fixed", "value": 191},
         "DC_AC_ratio": {
             "var_type": "fixed",
             "value": 1.479,
