@@ -514,6 +514,9 @@ class EfficientGlobalOptimizationDriver(Driver):
 
         # store intial DOE
         self.xdoe = xdoe
+        df = pd.DataFrame(xdoe)
+        df.to_csv("xdoe.csv")
+
 
         xdoe = scaler.transform(xdoe)
         # -----------------
@@ -701,7 +704,6 @@ class EfficientGlobalOptimizationDriver(Driver):
                 "Solution (-NPV/CAPEX)": float(np.squeeze(yopt))
             })
 
-
             if np.abs(error) < kwargs["tol"]:
                 conv_iter += 1
                 if conv_iter >= kwargs["min_conv_iter"]:
@@ -782,7 +784,7 @@ if __name__ == "__main__":
         # EGO Inputs
         "opt_var": "NPV_over_CAPEX",
         "n_procs": 4,
-        "n_doe": 10,
+        "n_doe": 12,
         "n_clusters": 4,  # total number of evals per iteration = n_clusters + 2*n_dims
         "n_seed": 0,
         "max_iter": 10,
@@ -808,7 +810,7 @@ if __name__ == "__main__":
                 "var_type": "fixed",
                 "value": 1.479,
             },
-            "b_P [MW]": {"var_type": "design", "limits": [20, 35], "types": "int"},
+            "b_P [MW]": {"var_type": "fixed", "value": 20, "types": "int"},
             "b_E_h [h]": {"var_type": "fixed", "value": 4},
             "cost_of_battery_P_fluct_in_peak_price_ratio": {
                 "var_type": "fixed",
