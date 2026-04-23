@@ -400,7 +400,7 @@ def model_evaluation(inputs):  # Evaluates the model
 
 class ParallelEvaluator(Evaluator):
     """
-    Implement Evaluator interface using multiprocessing Pool object (Python 3 only).
+    Implement Evaluator interface using multiprocessing Pool object (Python 3 only). 
     """
 
     def __init__(self, n_procs=31):
