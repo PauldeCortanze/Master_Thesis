@@ -39,8 +39,6 @@ from hydesign.wind.wind import wpp_comp as wpp
 from hydesign.wind.wind import (get_rotor_d)
 from hydesign.wind.wind import wpp_with_degradation_comp as wpp_with_degradation
 
-from openmdao.visualization.n2_viewer.n2_viewer import n2
-
 
 class hpp_base:
     def __init__(self, sim_pars_fn, variables, defaults={}, **kwargs):
@@ -668,7 +666,7 @@ class hpp_model(hpp_base):
 
         prob = hpp_base.get_prob(comps)
         self.prob = prob
-        self.setup_optimization()
+        self.setup_optimization(seed=kwargs.get('seed', 0))
 
         # Additional parameters
         prob.set_val("price_t", price)
@@ -933,64 +931,7 @@ class hpp_model(hpp_base):
         self.outputs = outputs
         return outputs
 
-    def optimize(self):
-        """Optimize the sizing of the hybrid power plant."""
-
-        # Define the design variables and their bounds
-        design_vars = [
-            "clearance [m]",
-            "sp [W/m2]",
-            "p_rated [MW]",
-            "Nwt",
-            "wind_MW_per_km2 [MW/km2]",
-            "solar_MW [MW]",
-            "surface_tilt [deg]",
-            "surface_azimuth [deg]",
-            "DC_AC_ratio",
-            "b_P [MW]",
-            "b_E_h [h]",
-            "cost_of_battery_P_fluct_in_peak_price_ratio",
-        ]
-
-        initial_value = [
-            60.000,
-            287.000,
-            10.000,
-            31.000,
-            5.000,
-            200.000,
-            25.000,
-            180.000,
-            1.000,
-            50.000,
-            6.000,
-            10.000,
-        ]
-
-        # Set initial values for the design variables
-        for var in design_vars:
-            self.prob.set_val(var, initial_value)
-
-        # Run the optimization driver
-        self.prob.run_driver()
-
-        # Retrieve the optimized values
-        optimized_values = {var: self.prob.get_val(var) for var in design_vars}
-        optimized_outputs = {out_var: self.prob.get_val(
-            out_var) for out_var in self.list_out_vars}
-
-        # Print or log results
-        print("Optimized Design Variables:")
-        for var, value in optimized_values.items():
-            print(f"{var}: {value}")
-
-        print("Optimized Outputs:")
-        for out_var, value in optimized_outputs.items():
-            print(f"{out_var}: {value}")
-
-        return optimized_values, optimized_outputs
-
-    def setup_optimization(self):
+    def setup_optimization(self, seed=0):
         model = self.prob.model
 
         # Example design variables
@@ -1002,29 +943,28 @@ class hpp_model(hpp_base):
                     model.add_design_var(var, lower=lower, upper=upper)
                 else:
                     model.add_design_var(var, lower=lower, upper=upper)
-                    # type_dic[var] = 4  # Float
+                    type_dic[var] = 8  # Float
 
         # Objective
         model.add_objective('NPV_over_CAPEX', scaler=-1)
 
         # Set up the driver
-        self.prob.driver = om.pyOptSparseDriver()
-        self.prob.driver.options['optimizer'] = 'NSGA2'
-        self.prob.driver.opt_settings['PopSize'] = 12
-        self.prob.driver.opt_settings['maxGen'] = 10
+        self.prob.driver = om.SimpleGADriver()
+        self.prob.driver.options['pop_size'] = 10
+        self.prob.driver.options['max_gen'] = 20
 
         # self.prob.set_solver_print(level=2)
-        # self.prob.driver.options['bits'] = type_dic
-        # self.prob.driver.options['Pc'] = 0.2
-        # self.prob.driver.options['Pm'] = 0.2
+        self.prob.driver.options['bits'] = type_dic
+        self.prob.driver.options['Pc'] = 0.5
+        self.prob.driver.options['Pm'] = 0.05
 
         # Define the path for the recorder
-        output_dir = 'optimization_results'
+        output_dir = 'optimization_results_parallel'
         os.makedirs(output_dir, exist_ok=True)
         self.filepath = os.path.join(
-            output_dir, f"history_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.sql")
+            output_dir, f"results_seed{seed}.sql")
         self.filepath_csv = os.path.join(
-            output_dir, f"history_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv")
+            output_dir, f"history_seed{seed}.csv")
 
         # Attach recorder to the DRIVER
         recorder = om.SqliteRecorder(self.filepath)
@@ -1033,8 +973,6 @@ class hpp_model(hpp_base):
         # Tell the driver exactly what to record
         self.prob.driver.recording_options['record_objectives'] = True
         self.prob.driver.recording_options['record_desvars'] = True
-        self.prob.driver.recording_options['includes'] = [
-            '*']  # Captures all outputs
 
         self.prob.setup()
 
@@ -1042,32 +980,11 @@ class hpp_model(hpp_base):
             if self.variables[var]['var_type'] == 'fixed':
                 self.prob.set_val(var, self.variables[var]['value'])
 
-        '''
-        output_dir = '../../hpp_assembly_GA_Driver_out'
-        os.makedirs(output_dir, exist_ok=True)
-
-        self.timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-        self.filename = f"Ga_history_{self.timestamp}.sql"
-        self.filepath = os.path.join(output_dir, self.filename)
-
-        print("Recorder file exists:", os.path.exists(self.filename))
-        print("Absolute path:", os.path.abspath(self.filename))
-
-        recorder = om.SqliteRecorder(self.filepath)
-        self.prob.driver.add_recorder(recorder)
-
-        self.prob.driver.recording_options['record_objectives'] = True
-        self.prob.driver.recording_options['record_desvars'] = True
-        self.prob.driver.recording_options['record_constraints'] = True
-        self.prob.driver.recording_options['includes'] = [
-            '*']  # optional but useful
-        '''
-
     def run_optimization(self):
         prob = self.prob
 
         prob.run_driver()
-        # prob.cleanup()
+        prob.cleanup()
 
         self.save_nsga2_results(self.filepath, self.filepath_csv)
         '''
@@ -1114,14 +1031,14 @@ class hpp_model(hpp_base):
         import openmdao.api as om
         import pandas as pd
         import numpy as np
-        
+
         # 1. Load the reader
         cr = om.CaseReader(sqlite_path)
-        
+
         # 2. Get cases from the driver
         # We fetch the identifiers or objects
         driver_cases = cr.get_cases('driver')
-        
+
         data = []
         for i, entry in enumerate(driver_cases):
             # Resolve the case object
@@ -1129,34 +1046,37 @@ class hpp_model(hpp_base):
                 case = cr.get_case(entry)
             else:
                 case = entry
-            
+
             # Extract basic data
             row = {
                 'iteration': i,
                 'timestamp': case.timestamp,
                 'success': case.success
             }
-            
+
             # Extract Objectives (NPV_over_CAPEX)
             for name, val in case.get_objectives().items():
                 # Handle numpy arrays or scalars
-                row[name] = val[0] if isinstance(val, (np.ndarray, list)) else val
-                
+                row[name] = val[0] if isinstance(
+                    val, (np.ndarray, list)) else val
+
             # Extract Design Variables (clearance, sp, solar_MW)
             for name, val in case.get_design_vars().items():
-                row[name] = val[0] if isinstance(val, (np.ndarray, list)) else val
-                
+                row[name] = val[0] if isinstance(
+                    val, (np.ndarray, list)) else val
+
             data.append(row)
-        
+
         if not data:
-            print("Warning: No cases found in the recorder. Is your driver recording objectives?")
+            print(
+                "Warning: No cases found in the recorder. Is your driver recording objectives?")
             return
 
         df = pd.DataFrame(data)
-        
+
         # Calculate time relative to the first iteration
         df['time_sec'] = df['timestamp'] - df['timestamp'].iloc[0]
-        
+
         # Save to CSV
         df.to_csv(csv_path, index=False)
         print(f"Successfully saved {len(df)} iterations to {csv_path}")
@@ -1180,10 +1100,37 @@ def mkdir(dir_):
     return dir_
 
 
+def run_optimization_seed(args):
+    """Standalone function for multiprocessing — one seed at a time."""
+    seed, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables = args
+
+    np.random.seed(seed)
+    print(f"[Seed {seed}] Starting... (PID={os.getpid()})", flush=True)
+
+    hpp = hpp_model(
+        latitude=latitude,
+        longitude=longitude,
+        altitude=altitude,
+        sim_pars_fn=sim_pars_fn,
+        input_ts_fn=input_ts_fn,
+        variables=variables,
+        seed=seed,
+    )
+
+    hpp.run_optimization()
+
+    result = {
+        'seed': seed,
+        'NPV_over_CAPEX': float(hpp.prob.get_val('NPV_over_CAPEX')[0]),
+    }
+    print(
+        f"[Seed {seed}] Done → NPV/CAPEX={result['NPV_over_CAPEX']:.4f}", flush=True)
+    return result
+
+
 if __name__ == "__main__":
-
+    import multiprocessing
     import time
-
     from hydesign.examples import examples_filepath
 
     name = "France_good_wind"
@@ -1236,38 +1183,23 @@ if __name__ == "__main__":
         },
     }
 
-    hpp = hpp_model(
-        latitude=latitude,
-        longitude=longitude,
-        altitude=altitude,
-        sim_pars_fn=sim_pars_fn,
-        input_ts_fn=input_ts_fn,
-        variables=variables,
-    )
+    seeds = [1, 2, 3, 4, 5, 6, 7, 8]
+
+    args_list = [
+        (seed, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables)
+        for seed in seeds
+    ]
 
     start = time.time()
 
-    x = [
-        10.0,
-        200.0,
-        5.0,
-        5,
-        1,
-        30,
-        28,
-        191,
-        1.479,
-        27,
-        4,
-        8.75,
-    ]
+    n_processes = min(len(seeds), os.cpu_count() - 2)
+    print(
+        f"Launching {len(seeds)} runs on {n_processes} processes...", flush=True)
 
-    # outs = hpp.evaluate(*x)
-    # hpp.print_design()
-
-    hpp.run_optimization()
+    with multiprocessing.Pool(processes=n_processes) as pool:
+        results = pool.map(run_optimization_seed, args_list)
 
     end = time.time()
-    print("exec. time [min]:", (end - start) / 60)
-
-    print(hpp.prob["NPV_over_CAPEX"])
+    print(f"\n=== Results (total time: {(end-start)/60:.1f} min) ===")
+    for r in results:
+        print(f"Seed {r['seed']:4d} → NPV/CAPEX = {r['NPV_over_CAPEX']:.4f}")
