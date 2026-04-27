@@ -1,6 +1,7 @@
 import datetime
 from fileinput import filename
 import os
+os.environ['OPENMDAO_REPORTS'] = '0'
 
 import numpy as np
 import openmdao.api as om
@@ -666,7 +667,9 @@ class hpp_model(hpp_base):
 
         prob = hpp_base.get_prob(comps)
         self.prob = prob
-        self.setup_optimization(seed=kwargs.get('seed', 0))
+        self.setup_optimization(seed=kwargs.get('seed', 0),
+                                Pc=kwargs.get('Pc', 0.5),
+                                Pm=kwargs.get('Pm', 0.05))
 
         # Additional parameters
         prob.set_val("price_t", price)
@@ -931,7 +934,7 @@ class hpp_model(hpp_base):
         self.outputs = outputs
         return outputs
 
-    def setup_optimization(self, seed=0):
+    def setup_optimization(self, seed=0, Pc=0.5, Pm=0.05):
         model = self.prob.model
 
         # Example design variables
@@ -950,21 +953,21 @@ class hpp_model(hpp_base):
 
         # Set up the driver
         self.prob.driver = om.SimpleGADriver()
-        self.prob.driver.options['pop_size'] = 10
-        self.prob.driver.options['max_gen'] = 20
+        self.prob.driver.options['pop_size'] = 2
+        self.prob.driver.options['max_gen'] = 1
 
         # self.prob.set_solver_print(level=2)
         self.prob.driver.options['bits'] = type_dic
-        self.prob.driver.options['Pc'] = 0.5
-        self.prob.driver.options['Pm'] = 0.05
+        self.prob.driver.options['Pc'] = Pc
+        self.prob.driver.options['Pm'] = Pm
 
         # Define the path for the recorder
         output_dir = 'optimization_results_parallel'
         os.makedirs(output_dir, exist_ok=True)
         self.filepath = os.path.join(
-            output_dir, f"results_seed{seed}.sql")
+            output_dir, f"results_seed{seed}_Pc{Pc}_Pm{Pm}.sql")
         self.filepath_csv = os.path.join(
-            output_dir, f"history_seed{seed}.csv")
+            output_dir, f"history_seed{seed}_Pc{Pc}_Pm{Pm}.csv")
 
         # Attach recorder to the DRIVER
         recorder = om.SqliteRecorder(self.filepath)
@@ -1102,10 +1105,10 @@ def mkdir(dir_):
 
 def run_optimization_seed(args):
     """Standalone function for multiprocessing — one seed at a time."""
-    seed, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables = args
+    seed, Pc, Pm, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables = args
 
     np.random.seed(seed)
-    print(f"[Seed {seed}] Starting... (PID={os.getpid()})", flush=True)
+    print(f"[Seed {seed}] [Pc={Pc}, Pm={Pm}] Starting... (PID={os.getpid()})", flush=True)
 
     hpp = hpp_model(
         latitude=latitude,
@@ -1115,16 +1118,20 @@ def run_optimization_seed(args):
         input_ts_fn=input_ts_fn,
         variables=variables,
         seed=seed,
+        Pc=Pc,
+        Pm=Pm,
     )
 
     hpp.run_optimization()
 
     result = {
         'seed': seed,
+        'Pc': Pc,
+        'Pm': Pm,
         'NPV_over_CAPEX': float(hpp.prob.get_val('NPV_over_CAPEX')[0]),
     }
     print(
-        f"[Seed {seed}] Done → NPV/CAPEX={result['NPV_over_CAPEX']:.4f}", flush=True)
+        f"[Seed {seed}] [Pc {Pc}, Pm {Pm}] Done → NPV/CAPEX={result['NPV_over_CAPEX']:.4f}", flush=True)
     return result
 
 
@@ -1183,18 +1190,21 @@ if __name__ == "__main__":
         },
     }
 
-    seeds = [1, 2, 3, 4, 5, 6, 7, 8]
+    seed = 4
+    Pc_list = [0.2, 0.3, 0.5, 0.7, 0.9]
+    Pm_list = [0.01, 0.05, 0.1, 0.15, 0.2]
 
     args_list = [
-        (seed, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables)
-        for seed in seeds
+        (seed, Pc, Pm, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables)
+        for Pc in Pc_list
+        for Pm in Pm_list
     ]
 
     start = time.time()
 
-    n_processes = min(len(seeds), os.cpu_count() - 2)
+    n_processes = min(len(Pc_list)*len(Pm_list), os.cpu_count() - 3)
     print(
-        f"Launching {len(seeds)} runs on {n_processes} processes...", flush=True)
+        f"Launching {len(Pc_list)*len(Pm_list)} runs on {n_processes} processes...", flush=True)
 
     with multiprocessing.Pool(processes=n_processes) as pool:
         results = pool.map(run_optimization_seed, args_list)
@@ -1202,4 +1212,4 @@ if __name__ == "__main__":
     end = time.time()
     print(f"\n=== Results (total time: {(end-start)/60:.1f} min) ===")
     for r in results:
-        print(f"Seed {r['seed']:4d} → NPV/CAPEX = {r['NPV_over_CAPEX']:.4f}")
+        print(f"Pc={r['Pc']:.2f}, Pm={r['Pm']:.2f} → NPV/CAPEX = {r['NPV_over_CAPEX']:.4f}")
