@@ -665,9 +665,15 @@ class hpp_model(hpp_base):
 
         prob = hpp_base.get_prob(comps)
         self.prob = prob
-        self.setup_optimization(seed=kwargs.get('seed', 0),
-                                Pc=kwargs.get('Pc', 0.5),
-                                Pm=kwargs.get('Pm', 0.05))
+        self.setup_optimization(
+            seed       = kwargs.get('seed', 0),
+            swarm_size = kwargs.get('swarm_size', 15),
+            max_iter   = kwargs.get('max_iter', 15),
+            w0         = kwargs.get('w0', 0.9),
+            w1         = kwargs.get('w1', 0.4),
+            c1         = kwargs.get('c1', 2.0),
+            c2         = kwargs.get('c2', 1.0),
+        )
 
         # Additional parameters
         prob.set_val("price_t", price)
@@ -932,7 +938,7 @@ class hpp_model(hpp_base):
         self.outputs = outputs
         return outputs
 
-    def setup_optimization(self, seed=0, Pc=0.5, Pm=0.05):
+    def setup_optimization(self, seed=0, swarm_size=15, max_iter=15, w0=0.9, w1=0.4, c1=2.0, c2=1.0):
         model = self.prob.model
 
         # Example design variables
@@ -950,22 +956,27 @@ class hpp_model(hpp_base):
         model.add_objective('NPV_over_CAPEX', scaler=-1)
 
         # Set up the driver
-        self.prob.driver = om.SimpleGADriver()
-        self.prob.driver.options['pop_size'] = 15
-        self.prob.driver.options['max_gen'] = 15
+        self.prob.driver = om.pyOptSparseDriver()
+        self.prob.driver.options['optimizer'] = 'ALPSO'
+        self.prob.driver.opt_settings['SwarmSize']    = swarm_size
+        self.prob.driver.opt_settings['maxOuterIter'] = max_iter
 
-        # self.prob.set_solver_print(level=2)
-        self.prob.driver.options['bits'] = type_dic
-        self.prob.driver.options['Pc'] = Pc
-        self.prob.driver.options['Pm'] = Pm
+        self.prob.driver.opt_settings['maxInnerIter'] = 1
+        self.prob.driver.opt_settings['minInnerIter'] = 1
+        self.prob.driver.opt_settings['stopCriteria'] = 0
+
+        self.prob.driver.opt_settings['seed'] = seed
+
+        self.prob.driver.opt_settings['dynInnerIter'] = 1
+        self.prob.driver.opt_settings['printOuterIters'] = 1
 
         # Define the path for the recorder
         output_dir = 'optimization_results_parallel'
         os.makedirs(output_dir, exist_ok=True)
         self.filepath = os.path.join(
-            output_dir, f"results_seed{seed}_Pc{Pc}_Pm{Pm}.sql")
+            output_dir, f"results_seed{seed}_sw{swarm_size}_w0{w0}_w1{w1}_c1{c1}_c2{c2}.sql")
         self.filepath_csv = os.path.join(
-            output_dir, f"history_seed{seed}_Pc{Pc}_Pm{Pm}.csv")
+            output_dir, f"results_seed{seed}_sw{swarm_size}_w0{w0}_w1{w1}_c1{c1}_c2{c2}.csv")
 
         # Attach recorder to the DRIVER
         recorder = om.SqliteRecorder(self.filepath)
@@ -1102,35 +1113,52 @@ def mkdir(dir_):
 
 
 def run_optimization_seed(args):
-    """Standalone function for multiprocessing — one seed at a time."""
-    seed, Pc, Pm, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables = args
+    seed, swarm_size, max_iter, w0, w1, c1, c2, \
+        latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables = args
 
     np.random.seed(seed)
-    print(
-        f"[Seed {seed}] [Pc={Pc}, Pm={Pm}] Starting... (PID={os.getpid()})", flush=True)
+    print(f"[Seed {seed}] [sw={swarm_size}, w0={w0}, c1={c1}, c2={c2}] Starting... "
+          f"(PID={os.getpid()})", flush=True)
+
+    # Resolve absolute paths BEFORE changing directory
+    base_dir = os.path.abspath('optimization_results_PSO')
+    worker_dir = os.path.join(
+        base_dir,
+        f'worker_seed{seed}_sw{swarm_size}_w0{w0}_c1{c1}_c2{c2}'
+    )
+    os.makedirs(worker_dir, exist_ok=True)
+    os.chdir(worker_dir)
+    print(f"[Seed {seed}] Starting... (PID={os.getpid()})", flush=True)
 
     hpp = hpp_model(
-        latitude=latitude,
-        longitude=longitude,
-        altitude=altitude,
-        sim_pars_fn=sim_pars_fn,
-        input_ts_fn=input_ts_fn,
-        variables=variables,
-        seed=seed,
-        Pc=Pc,
-        Pm=Pm,
+        latitude    = latitude,
+        longitude   = longitude,
+        altitude    = altitude,
+        sim_pars_fn = sim_pars_fn,
+        input_ts_fn = input_ts_fn,
+        variables   = variables,
+        seed        = seed,
+        swarm_size  = swarm_size,
+        max_iter    = max_iter,
+        w0          = w0,
+        w1          = w1,
+        c1          = c1,
+        c2          = c2,
     )
 
     hpp.run_optimization()
 
     result = {
-        'seed': seed,
-        'Pc': Pc,
-        'Pm': Pm,
+        'seed'         : seed,
+        'swarm_size'   : swarm_size,
+        'w0'           : w0,
+        'w1'           : w1,
+        'c1'           : c1,
+        'c2'           : c2,
         'NPV_over_CAPEX': float(hpp.prob.get_val('NPV_over_CAPEX')[0]),
     }
-    print(
-        f"[Seed {seed}] [Pc {Pc}, Pm {Pm}] Done → NPV/CAPEX={result['NPV_over_CAPEX']:.4f}", flush=True)
+    print(f"[Seed {seed}] [sw={swarm_size}, w0={w0}, c1={c1}, c2={c2}] "
+          f"Done → NPV/CAPEX={result['NPV_over_CAPEX']:.4f}", flush=True)
     return result
 
 
@@ -1189,28 +1217,30 @@ if __name__ == "__main__":
         },
     }
 
-    seed = 1
-    Pc_list = [0.2, 0.3, 0.4, 0.5, 0.7, 0.9]
-    Pm_list = [0.01, 0.05, 0.1, 0.15, 0.2, 0.3]
+    seeds = [1, 2, 3]
+    swarm_size = 5
+    max_iter = 2
+    w0 = 0.9
+    w1 = 0.4
+    c1 = 2.0
+    c2 = 1.0
 
     args_list = [
-        (seed, Pc, Pm, latitude, longitude, altitude,
-         sim_pars_fn, input_ts_fn, variables)
-        for Pc in Pc_list
-        for Pm in Pm_list
+        (seed, swarm_size, max_iter, w0, w1, c1, c2,
+         latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables)
+        for seed in seeds
     ]
 
     start = time.time()
 
-    n_processes = min(len(Pc_list)*len(Pm_list), os.cpu_count() - 3)
-    print(
-        f"Launching {len(Pc_list)*len(Pm_list)} runs on {n_processes} processes...", flush=True)
+    n_processes = min(len(args_list), os.cpu_count() - 2)
+    print(f"Launching {len(args_list)} runs on {n_processes} processes...", flush=True)
 
     with multiprocessing.Pool(processes=n_processes) as pool:
         results = pool.map(run_optimization_seed, args_list)
 
     end = time.time()
-    print(f"\n=== Results (total time: {(end-start)/60:.1f} min) ===")
+    print(f"\n=== PSO Results (total time: {(end-start)/60:.1f} min) ===")
     for r in results:
-        print(
-            f"Pc={r['Pc']:.2f}, Pm={r['Pm']:.2f} → NPV/CAPEX = {r['NPV_over_CAPEX']:.4f}")
+        print(f"Seed={r['seed']}, w0={r['w0']}, c1={r['c1']}, c2={r['c2']} "
+              f"→ NPV/CAPEX={r['NPV_over_CAPEX']:.4f}")
