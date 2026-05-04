@@ -1,44 +1,42 @@
-import datetime
-from fileinput import filename
-import os
-os.environ['OPENMDAO_REPORTS'] = '0'
-
-import numpy as np
-import openmdao.api as om
-import pandas as pd
-import xarray as xr
-import yaml
-
-from hydesign.battery_degradation import battery_degradation_comp as battery_degradation
-from hydesign.battery_degradation import (
-    battery_loss_in_capacity_due_to_temp_comp as battery_loss_in_capacity_due_to_temp,
-)
-from hydesign.costs.costs import battery_cost_comp as battery_cost
-from hydesign.costs.costs import pvp_cost_comp as pvp_cost
-from hydesign.costs.costs import shared_cost_comp as shared_cost
-from hydesign.costs.costs import wpp_cost_comp as wpp_cost
-from hydesign.ems.ems import ems_comp as ems
-from hydesign.ems.ems import ems_long_term_operation_comp as ems_long_term_operation
-from hydesign.finance.finance import finance_comp as finance
-from hydesign.look_up_tables import lut_filepath
-from hydesign.pv.pv import pvp_comp as pvp
-from hydesign.pv.pv import pvp_with_degradation_comp as pvp_with_degradation
-from hydesign.reliability import (
-    battery_with_reliability_comp as battery_with_reliability,
-)
-from hydesign.reliability import pvp_with_reliability_comp as pvp_with_reliability
-from hydesign.reliability import wpp_with_reliability_comp as wpp_with_reliability
-from hydesign.weather.weather import ABL_comp as ABL
+from hydesign.wind.wind import wpp_with_degradation_comp as wpp_with_degradation
+from hydesign.wind.wind import (get_rotor_d)
+from hydesign.wind.wind import wpp_comp as wpp
+from hydesign.assembly.hpp_mapping_comp import HPPMappingComp
+from hydesign.wind.wind import genericWT_surrogate_comp as genericWT_surrogate
+from hydesign.wind.wind import genericWake_surrogate_comp as genericWake_surrogate
 from hydesign.weather.weather import (
     extract_weather_for_HPP,
     select_years,
 )
-from hydesign.wind.wind import genericWake_surrogate_comp as genericWake_surrogate
-from hydesign.wind.wind import genericWT_surrogate_comp as genericWT_surrogate
-from hydesign.assembly.hpp_mapping_comp import HPPMappingComp
-from hydesign.wind.wind import wpp_comp as wpp
-from hydesign.wind.wind import (get_rotor_d)
-from hydesign.wind.wind import wpp_with_degradation_comp as wpp_with_degradation
+from hydesign.weather.weather import ABL_comp as ABL
+from hydesign.reliability import wpp_with_reliability_comp as wpp_with_reliability
+from hydesign.reliability import pvp_with_reliability_comp as pvp_with_reliability
+from hydesign.reliability import (
+    battery_with_reliability_comp as battery_with_reliability,
+)
+from hydesign.pv.pv import pvp_with_degradation_comp as pvp_with_degradation
+from hydesign.pv.pv import pvp_comp as pvp
+from hydesign.look_up_tables import lut_filepath
+from hydesign.finance.finance import finance_comp as finance
+from hydesign.ems.ems import ems_long_term_operation_comp as ems_long_term_operation
+from hydesign.ems.ems import ems_comp as ems
+from hydesign.costs.costs import wpp_cost_comp as wpp_cost
+from hydesign.costs.costs import shared_cost_comp as shared_cost
+from hydesign.costs.costs import pvp_cost_comp as pvp_cost
+from hydesign.costs.costs import battery_cost_comp as battery_cost
+from hydesign.battery_degradation import (
+    battery_loss_in_capacity_due_to_temp_comp as battery_loss_in_capacity_due_to_temp,
+)
+from hydesign.battery_degradation import battery_degradation_comp as battery_degradation
+import yaml
+import xarray as xr
+import pandas as pd
+import openmdao.api as om
+import numpy as np
+import datetime
+from fileinput import filename
+import os
+os.environ['OPENMDAO_REPORTS'] = '0'
 
 
 class hpp_base:
@@ -953,8 +951,8 @@ class hpp_model(hpp_base):
 
         # Set up the driver
         self.prob.driver = om.SimpleGADriver()
-        self.prob.driver.options['pop_size'] = 2
-        self.prob.driver.options['max_gen'] = 1
+        self.prob.driver.options['pop_size'] = 15
+        self.prob.driver.options['max_gen'] = 15
 
         # self.prob.set_solver_print(level=2)
         self.prob.driver.options['bits'] = type_dic
@@ -1108,7 +1106,8 @@ def run_optimization_seed(args):
     seed, Pc, Pm, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables = args
 
     np.random.seed(seed)
-    print(f"[Seed {seed}] [Pc={Pc}, Pm={Pm}] Starting... (PID={os.getpid()})", flush=True)
+    print(
+        f"[Seed {seed}] [Pc={Pc}, Pm={Pm}] Starting... (PID={os.getpid()})", flush=True)
 
     hpp = hpp_model(
         latitude=latitude,
@@ -1190,12 +1189,13 @@ if __name__ == "__main__":
         },
     }
 
-    seed = 4
-    Pc_list = [0.2, 0.3, 0.5, 0.7, 0.9]
-    Pm_list = [0.01, 0.05, 0.1, 0.15, 0.2]
+    seed = 1
+    Pc_list = [0.2, 0.3, 0.4, 0.5, 0.7, 0.9]
+    Pm_list = [0.01, 0.05, 0.1, 0.15, 0.2, 0.3]
 
     args_list = [
-        (seed, Pc, Pm, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables)
+        (seed, Pc, Pm, latitude, longitude, altitude,
+         sim_pars_fn, input_ts_fn, variables)
         for Pc in Pc_list
         for Pm in Pm_list
     ]
@@ -1212,4 +1212,5 @@ if __name__ == "__main__":
     end = time.time()
     print(f"\n=== Results (total time: {(end-start)/60:.1f} min) ===")
     for r in results:
-        print(f"Pc={r['Pc']:.2f}, Pm={r['Pm']:.2f} → NPV/CAPEX = {r['NPV_over_CAPEX']:.4f}")
+        print(
+            f"Pc={r['Pc']:.2f}, Pm={r['Pm']:.2f} → NPV/CAPEX = {r['NPV_over_CAPEX']:.4f}")
