@@ -159,18 +159,6 @@ def opt_sm_EI(sm, mixint, x0, fmin=1e10, n_seed=0):
         stepwise_factor=0.9,
     )
 
-    # res = optimize.minimize(
-    #     fun = func,
-    #     x0 = x0,
-    #     method="SLSQP",
-    #     bounds=[(0,1)]*ndims,
-    #     options={
-    #         "maxiter": 100,
-    #         'eps':1e-3,
-    #         'disp':False
-    #     },
-    # )
-
     return res.x.reshape([1, -1])
 
 
@@ -359,8 +347,6 @@ def get_sampling(mixint, seed, criterion="maximin"):
                 random_state=int(seed),
             )
             sampling = mixint.build_sampling_method(random_state=int(seed))
-        # else:
-        #     sampling = mixint.build_sampling_method(random_state=int(seed))
         return sampling
 
 
@@ -442,7 +428,6 @@ class ParallelEvaluator(Evaluator):
 
 
 def check_types(kwargs):
-    # kwargs = derive_example_info(kwargs)
     for x in ["num_batteries", "n_procs", "n_doe", "n_clusters", "n_seed", "max_iter"]:
         kwargs[x] = int(kwargs[x])
 
@@ -478,19 +463,6 @@ class EfficientGlobalOptimizationDriver(Driver):
             "time": [],
             "yopt": [],
         }
-        # -----------------
-        # INPUTS
-        # -----------------
-
-        # paralel EGO parameters
-        # n_procs = 31 # number of parallel process. Max number of processors - 1.
-        # n_doe = n_procs*2
-        # n_clusters = int(n_procs/2)
-        # npred = 1e4
-        # npred = 1e5
-        # tol = 1e-6
-        # min_conv_iter = 3
-
         start_total = time.time()
 
         variables = kwargs["variables"]
@@ -516,7 +488,6 @@ class EfficientGlobalOptimizationDriver(Driver):
         self.xdoe = xdoe
         df = pd.DataFrame(xdoe)
         df.to_csv("xdoe.csv")
-
 
         xdoe = scaler.transform(xdoe)
         # -----------------
@@ -554,7 +525,6 @@ class EfficientGlobalOptimizationDriver(Driver):
         list_out_vars = hpp_m.list_out_vars
         op_var_index = list_out_vars.index(opt_var)
         kwargs.update({"op_var_index": op_var_index})
-        # Stablish types for design variables
 
         kwargs["list_vars"] = list_vars
         kwargs["design_vars"] = design_vars
@@ -577,7 +547,6 @@ class EfficientGlobalOptimizationDriver(Driver):
         yopt = ydoe[[np.argmin(ydoe)], :]
         kwargs["yopt"] = yopt
         yold = np.copy(yopt)
-        # xold = None
         print(
             f"  Current solution {opt_sign}*{opt_var} = {float(np.squeeze(yopt)):.3E}".replace(
                 "1*", ""
@@ -603,22 +572,17 @@ class EfficientGlobalOptimizationDriver(Driver):
             sm = get_sm(xdoe, ydoe, **sm_args)
             kwargs["sm"] = sm
 
-            # Evaluate surrogate model in a large number of design points
-            # in parallel
+            # Evaluate surrogate model in a large number of design points in parallel
             start = time.time()
             both = PE.run_both(surrogate_evaluation, itr, **kwargs)
-            # with Pool(n_procs) as p:
-            #     both = ( p.map(fun_par, (np.arange(n_procs)+itr*100) * 100 + itr) )
             xpred = np.vstack([both[ii][0] for ii in range(len(both))])
             ypred_LB = np.vstack([both[ii][1] for ii in range(len(both))])
 
-            # Get candidate points from clustering all sm evalautions
+            # Get candidate points from clustering all sm evaluations
             n_clusters = kwargs["n_clusters"]
             xnew = get_candiate_points(
-                xpred, ypred_LB, n_clusters=n_clusters, quantile=1e-2  # n_clusters - 1,
-            )  # 1/(kwargs['npred']/n_clusters) )
-            # request candidate points based on global evaluation of current surrogate
-            # returns best designs in n_cluster of points with outputs bellow a quantile
+                xpred, ypred_LB, n_clusters=n_clusters, quantile=1e-2
+            )
             lapse = np.round((time.time() - start) / 60, 2)
             print(
                 f"Update sm and extract candidate points took {lapse} minutes")
@@ -626,16 +590,9 @@ class EfficientGlobalOptimizationDriver(Driver):
             # -------------------
             # Refinement
             # -------------------
-            # # optimize the sm starting on the cluster based candidates and the best design
-            # xnew, _ = concat_to_existing(xnew, _, xopt, _)
-            # xopt_iter = PE.run_xopt_iter(surrogate_optimization, xnew, **kwargs)
-
-            # 2C)
             if np.abs(error) < kwargs["tol"]:
                 # add refinement around the opt
-                np.random.seed(
-                    kwargs["n_seed"] * 100 + itr
-                )  # to have a different refinement per iteration
+                np.random.seed(kwargs["n_seed"] * 100 + itr)
                 step = np.random.uniform(low=0.05, high=0.25)
                 xopt_iter = perturbe_around_point(xopt, step=step)
             else:
@@ -677,12 +634,10 @@ class EfficientGlobalOptimizationDriver(Driver):
             recorder["time"].append(time.time())
             recorder["yopt"].append(float(np.squeeze(yopt)))
 
-            # if itr > 0:
             error = opt_sign * float(1 - (np.squeeze(yold) / np.squeeze(yopt)))
 
             xdoe = np.copy(xdoe_upd)
             ydoe = np.copy(ydoe_upd)
-            # xold = np.copy(xopt)
             yold = np.copy(yopt)
             itr = itr + 1
             lapse = np.round((time.time() - start_iter) / 60, 2)
@@ -696,13 +651,33 @@ class EfficientGlobalOptimizationDriver(Driver):
             print(f"  rel_yopt_change = {error:.2E}")
             print(f"Iteration {itr} took {lapse} minutes\n")
 
-            save_results.append({
-                "Iteration": itr,
-                "Eval": xdoe.shape[0],
-                "New simulation": xopt_iter.shape[0],
-                "Time": lapse,
-                "Solution (-NPV/CAPEX)": float(np.squeeze(yopt))
-            })
+            # ------------------------------------------------------------------
+            # Record iteration results: metadata + best design variable values
+            # ------------------------------------------------------------------
+            xopt_iter_readable = scaler.inverse_transform(xopt_iter)
+            xopt_iter_readable = expand_x_for_model_eval(
+                xopt_iter_readable, kwargs)
+
+            for j in range(xopt_iter.shape[0]):
+                iter_result = {
+                    "Iteration": itr,
+                    # cumulative eval index
+                    "Eval": xdoe.shape[0] - xopt_iter.shape[0] + j + 1,
+                    "New simulations": xopt_iter.shape[0],
+                    "Time [min]": lapse,
+                    opt_var: float(np.squeeze(yopt_iter[j])) if yopt_iter[j] is not None else None,
+                }
+                for iv, var in enumerate(list_vars):
+                    iter_result[var] = xopt_iter_readable[j, iv]
+
+                save_results.append(iter_result)
+
+            # Flush to disk after every iteration so results are not lost on crash
+            df = pd.DataFrame(save_results)
+            df.to_csv("Results.csv", index=False)
+            # ------------------------------------------------------------------
+
+            kwargs["yopt"] = yopt
 
             if np.abs(error) < kwargs["tol"]:
                 conv_iter += 1
@@ -750,6 +725,7 @@ class EfficientGlobalOptimizationDriver(Driver):
         self.hpp_m = hpp_m
         self.recorder = recorder
 
+        # Final save of Results.csv (safety flush)
         df = pd.DataFrame(save_results)
         df.to_csv("Results.csv", index=False)
 
@@ -794,12 +770,12 @@ if __name__ == "__main__":
         "min_conv_iter": 5,
         # Design Variables
         "variables": {
-            "clearance [m]": {"var_type": "design", "limits": [10, 60], "types": "int"},
-            "sp [W/m2]": {"var_type": "design", "limits": [200, 360], "types": "int"},
-            "p_rated [MW]": {"var_type": "design", "limits": [5, 20], "types": "int"},
-            "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
-            "wind_MW_per_km2 [MW/km2]": {"var_type": "design", "limits": [1, 10], "types": "int"},
-            "solar_MW [MW]": {"var_type": "design", "limits": [30, 200], "types": "int"},
+            "clearance [m]": {"var_type": "design", "limits": [10, 120], "types": "float"},
+            "sp [W/m2]": {"var_type": "design", "limits": [200, 360], "types": "float"},
+            "p_rated [MW]": {"var_type": "design", "limits": [5, 20], "types": "float"},
+            "Nwt": {"var_type": "design", "limits": [5, 50], "types": "float"},
+            "wind_MW_per_km2 [MW/km2]": {"var_type": "design", "limits": [1, 10], "types": "float"},
+            "solar_MW [MW]": {"var_type": "design", "limits": [30, 200], "types": "float"},
             "surface_tilt [deg]": {"var_type": "design", "limits": [0, 90], "types": "float"},
             "surface_azimuth [deg]": {
                 "var_type": "design",
@@ -831,7 +807,3 @@ if __name__ == "__main__":
     plt.plot(xs, ys)
     plt.xlabel("time [s]")
     plt.ylabel("yopt [-]")
-
-    # import pickle
-    # with open('recording.pkl', 'wb') as f:
-    #     pickle.dump(EGOD.recorder, f)
