@@ -1183,13 +1183,13 @@ if __name__ == "__main__":
 
     # Design Variables
     variables = {
-        "clearance": {"var_type": "design", "limits": [10, 60], "types": "int"},
+        "clearance": {"var_type": "design", "limits": [10, 120], "types": "int"},
         # "clearance": {"var_type": "fixed", "value": 55},
         "sp": {"var_type": "design", "limits": [200, 360], "types": "int"},
         # "sp": {"var_type": "fixed", "value": 257},
         "p_rated": {"var_type": "design", "limits": [5, 20], "types": "int"},
         # "p_rated": {"var_type": "fixed", "value": 18},
-        "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
+        "Nwt": {"var_type": "design", "limits": [5, 50], "types": "int"},
         # "Nwt": {"var_type": "fixed", "value": 12},
         "wind_MW_per_km2": {"var_type": "design", "limits": [1, 10], "types": "float"},
         # "wind_MW_per_km2": {"var_type": "fixed", "value": 9},
@@ -1217,9 +1217,9 @@ if __name__ == "__main__":
         },
     }
 
-    seeds = [1, 2, 3]
-    swarm_size = 5
-    max_iter = 2
+    seeds = [1, 2, 3, 4, 5, 6, 7, 8]
+    swarm_size = 15
+    max_iter = 40
     w0 = 0.9
     w1 = 0.4
     c1 = 2.0

@@ -33,6 +33,7 @@ import xarray as xr
 import pandas as pd
 import openmdao.api as om
 import numpy as np
+import time
 import datetime
 from fileinput import filename
 import os
@@ -665,9 +666,11 @@ class hpp_model(hpp_base):
 
         prob = hpp_base.get_prob(comps)
         self.prob = prob
-        self.setup_optimization(seed=kwargs.get('seed', 0),
-                                Pc=kwargs.get('Pc', 0.5),
-                                Pm=kwargs.get('Pm', 0.05))
+        self.setup_optimization(seed=kwargs.get('seed'),
+                                PopSize=kwargs.get('PopSize'),
+                                maxGen=kwargs.get('maxGen'),
+                                Pc=kwargs.get('Pc'),
+                                Pm=kwargs.get('Pm'))
 
         # Additional parameters
         prob.set_val("price_t", price)
@@ -689,6 +692,14 @@ class hpp_model(hpp_base):
         prob.set_val("tax_rate", sim_pars["tax_rate"])
         prob.set_val("land_use_per_solar_MW",
                      sim_pars["land_use_per_solar_MW"])
+        
+        for var in self.variables.keys():
+            if self.variables[var]['var_type'] == 'design':
+                lower, upper = self.variables[var]['limits']
+                if self.variables[var]['types'] == 'int':
+                    prob.set_val(var, np.random.uniform(lower, upper))
+                else:
+                    prob.set_val(var, np.random.uniform(lower, upper))
 
         self.prob = prob
 
@@ -932,8 +943,9 @@ class hpp_model(hpp_base):
         self.outputs = outputs
         return outputs
 
-    def setup_optimization(self, seed=0, Pc=0.6, Pm=0.2):
+    def setup_optimization(self, seed=0, PopSize=4, maxGen=1, Pc=0.6, Pm=0.2):
         model = self.prob.model
+        prob = self.prob
 
         # Example design variables
         type_dic = {}
@@ -950,22 +962,24 @@ class hpp_model(hpp_base):
         model.add_objective('NPV_over_CAPEX', scaler=-1)
 
         # Set up the driver
-        self.prob.driver = om.SimpleGADriver()
-        self.prob.driver.options['pop_size'] = 15
-        self.prob.driver.options['max_gen'] = 40
+        self.prob.driver = om.pyOptSparseDriver()
+        self.prob.driver.options['optimizer'] = 'NSGA2'
+        self.prob.driver.opt_settings['PopSize'] = PopSize
+        self.prob.driver.opt_settings['maxGen'] = maxGen
 
         # self.prob.set_solver_print(level=2)
-        self.prob.driver.options['bits'] = type_dic
-        self.prob.driver.options['Pc'] = Pc
-        self.prob.driver.options['Pm'] = Pm
+        self.prob.driver.opt_settings['pCross_real'] = Pc
+        self.prob.driver.opt_settings['pMut_real'] = Pm
+
+        self.prob.driver.opt_settings['seed'] = seed
 
         # Define the path for the recorder
         output_dir = 'optimization_results_parallel'
         os.makedirs(output_dir, exist_ok=True)
         self.filepath = os.path.join(
-            output_dir, f"results_seed{seed}_Pc{Pc}_Pm{Pm}.sql")
+            output_dir, f"results_NSGA2_seed{seed}_Pc{Pc}_Pm{Pm}.sql")
         self.filepath_csv = os.path.join(
-            output_dir, f"history_seed{seed}_Pc{Pc}_Pm{Pm}.csv")
+            output_dir, f"history_NSGA2_seed{seed}_Pc{Pc}_Pm{Pm}.csv")
 
         # Attach recorder to the DRIVER
         recorder = om.SqliteRecorder(self.filepath)
@@ -1086,7 +1100,6 @@ class hpp_model(hpp_base):
 # Auxiliar functions for ems modelling
 # -----------------------------------------------------------------------
 
-
 def mkdir(dir_):
     if str(dir_).startswith("~"):
         dir_ = str(dir_).replace("~", os.path.expanduser("~"))
@@ -1100,39 +1113,55 @@ def mkdir(dir_):
             pass
     return dir_
 
-
 def run_optimization_seed(args):
-    """Standalone function for multiprocessing — one seed at a time."""
-    seed, Pc, Pm, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables = args
+    import traceback
+    try:
+        seed, PopSize, maxGen, Pc, Pm, latitude, longitude, \
+            altitude, sim_pars_fn, input_ts_fn, variables = args
 
-    np.random.seed(seed)
-    print(
-        f"[Seed {seed}] [Pc={Pc}, Pm={Pm}] Starting... (PID={os.getpid()})", flush=True)
+        print(f"[Run {seed}] Real seed used = {seed} "
+              f"(PID={os.getpid()})", flush=True)
 
-    hpp = hpp_model(
-        latitude=latitude,
-        longitude=longitude,
-        altitude=altitude,
-        sim_pars_fn=sim_pars_fn,
-        input_ts_fn=input_ts_fn,
-        variables=variables,
-        seed=seed,
-        Pc=Pc,
-        Pm=Pm,
-    )
+        # ✅ Use unique_seed in filenames so files don't collide
+        base_dir = os.path.abspath('optimization_results_NSGA2')
+        worker_dir = os.path.join(
+            base_dir, f'worker_run_Pc{Pc}_Pm{Pm}_seed{seed}_pid{os.getpid()}')
+        os.makedirs(worker_dir, exist_ok=True)
+        os.chdir(worker_dir)
 
-    hpp.run_optimization()
+        hpp = hpp_model(
+            latitude=latitude,
+            longitude=longitude,
+            altitude=altitude,
+            sim_pars_fn=sim_pars_fn,
+            input_ts_fn=input_ts_fn,
+            variables=variables,
+            seed=seed,  # ✅ pass unique seed
+            PopSize=PopSize,
+            maxGen=maxGen,
+            Pc=Pc,
+            Pm=Pm,
+            worker_dir=worker_dir,
+        )
 
-    result = {
-        'seed': seed,
-        'Pc': Pc,
-        'Pm': Pm,
-        'NPV_over_CAPEX': float(hpp.prob.get_val('NPV_over_CAPEX')[0]),
-    }
-    print(
-        f"[Seed {seed}] [Pc {Pc}, Pm {Pm}] Done → NPV/CAPEX={result['NPV_over_CAPEX']:.4f}", flush=True)
-    return result
+        hpp.run_optimization()
 
+        result = {
+            'run': seed,          # original index for tracking
+            'unique_seed': seed,   # actual seed used
+            'Pc': Pc,
+            'Pm': Pm,
+            'NPV_over_CAPEX': float(hpp.prob.get_val('NPV_over_CAPEX')[0]),
+        }
+        print(
+            f"[Run {seed}] Done → NPV/CAPEX={result['NPV_over_CAPEX']:.4f}", flush=True)
+        return result
+
+    except Exception as e:
+        import traceback
+        print(f" WORKER CRASHED", flush=True)
+        traceback.print_exc()
+        raise
 
 if __name__ == "__main__":
     import multiprocessing
@@ -1155,13 +1184,13 @@ if __name__ == "__main__":
 
     # Design Variables
     variables = {
-        "clearance": {"var_type": "design", "limits": [10, 60], "types": "int"},
+        "clearance": {"var_type": "design", "limits": [10, 120], "types": "int"},
         # "clearance": {"var_type": "fixed", "value": 55},
         "sp": {"var_type": "design", "limits": [200, 360], "types": "int"},
         # "sp": {"var_type": "fixed", "value": 257},
         "p_rated": {"var_type": "design", "limits": [5, 20], "types": "int"},
         # "p_rated": {"var_type": "fixed", "value": 18},
-        "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
+        "Nwt": {"var_type": "design", "limits": [5, 50], "types": "int"},
         # "Nwt": {"var_type": "fixed", "value": 12},
         "wind_MW_per_km2": {"var_type": "design", "limits": [1, 10], "types": "float"},
         # "wind_MW_per_km2": {"var_type": "fixed", "value": 9},
@@ -1189,19 +1218,21 @@ if __name__ == "__main__":
         },
     }
 
-    seeds = [1, 2, 3, 4, 5, 6, 7, 8]
-    Pc = 0.6
-    Pm = 0.2
+    seed = 0
+    PopSize = 16
+    maxGen = 45
+    Pc_list = [0.6]
+    Pm_list = [0.25]
 
     args_list = [
-        (seed, Pc, Pm, latitude, longitude, altitude,
-         sim_pars_fn, input_ts_fn, variables)
-        for seed in seeds
+        (seed, PopSize, maxGen, Pc, Pm, latitude, longitude, altitude, sim_pars_fn, input_ts_fn, variables)
+        for Pc in Pc_list
+        for Pm in Pm_list
     ]
 
     start = time.time()
 
-    n_processes = min(len(args_list), os.cpu_count() - 3)
+    n_processes = min(len(args_list), os.cpu_count() - 4)
     print(
         f"Launching {len(args_list)} runs on {n_processes} processes...", flush=True)
 
@@ -1211,5 +1242,5 @@ if __name__ == "__main__":
     end = time.time()
     print(f"\n=== Results (total time: {(end-start)/60:.1f} min) ===")
     for r in results:
-        print(
-            f"Pc={r['Pc']:.2f}, Pm={r['Pm']:.2f} → NPV/CAPEX = {r['NPV_over_CAPEX']:.4f}")
+        print(f"Run {r['run']} (Pc={r['Pc']}, Pm={r['Pm']}) "
+              f"→ NPV/CAPEX={r['NPV_over_CAPEX']:.4f}")
