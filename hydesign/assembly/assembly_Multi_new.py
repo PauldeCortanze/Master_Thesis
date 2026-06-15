@@ -1089,10 +1089,10 @@ class hpp_model(hpp_base):
         # prob.driver.opt_settings['pMut_real']     = Pm
         # # prob.driver.opt_settings['seed']          = seed
 
-        # ── VESPODriver ───────────────────────────────────────────────────
+        # ── VEPSODriver ───────────────────────────────────────────────────
         output_dir = 'optimization_results_multi-objective_VEPSO'
         os.makedirs(output_dir, exist_ok=True)
- 
+
         history_csv = os.path.join(
             output_dir,
             f"swarm_history_VEPSO_seed{seed}_ew{emission_weight}.csv"
@@ -1205,7 +1205,6 @@ def mkdir(dir_):
             pass
     return dir_
 
-
 def run_optimization_seed(args):
     """
     Worker function for parallel multi-seed runs.
@@ -1308,7 +1307,6 @@ def run_optimization_seed(args):
         traceback.print_exc()
         raise
 
-
 # =============================================================================
 #  Main
 # =============================================================================
@@ -1349,8 +1347,8 @@ if __name__ == "__main__":
         "surface_tilt": {"var_type": "design", "limits": [0, 90],    "types": "float"},
         "surface_azimuth": {"var_type": "design", "limits": [150, 210], "types": "float"},
         "DC_AC_ratio":  {"var_type": "fixed", "value": 1.479},
-        "b_P":          {"var_type": "fixed", "value": 10*20},
-        "b_E_h":        {"var_type": "fixed", "value": 10*4},
+        "b_P":          {"var_type": "design", "limits": [20, 200], "types": "float"},
+        "b_E_h":        {"var_type": "design", "limits": [4, 40], "types": "float"},
         "cost_of_battery_P_fluct_in_peak_price_ratio": {"var_type": "fixed", "value": 8.75},
     }
 
