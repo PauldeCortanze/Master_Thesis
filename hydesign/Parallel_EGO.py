@@ -517,7 +517,6 @@ class EfficientGlobalOptimizationDriver(Driver):
         df = pd.DataFrame(xdoe)
         df.to_csv("xdoe.csv")
 
-
         xdoe = scaler.transform(xdoe)
         # -----------------
         # HPP model
@@ -785,19 +784,19 @@ if __name__ == "__main__":
         "opt_var": "NPV_over_CAPEX",
         "n_procs": 6,
         "n_doe": 15,
-        "n_clusters": 4,  # total number of evals per iteration = n_clusters + 2*n_dims
+        "n_clusters": 5,  # total number of evals per iteration = n_clusters + 2*n_dims
         "n_seed": 0,
-        "max_iter": 50,
+        "max_iter": 5,
         "final_design_fn": "hydesign_design_0.csv",
         "npred": 2e4,
         "tol": 1e-9,
         "min_conv_iter": 5,
         # Design Variables
         "variables": {
-            "clearance [m]": {"var_type": "design", "limits": [10, 60], "types": "int"},
+            "clearance [m]": {"var_type": "design", "limits": [10, 120], "types": "int"},
             "sp [W/m2]": {"var_type": "design", "limits": [200, 360], "types": "int"},
             "p_rated [MW]": {"var_type": "design", "limits": [5, 20], "types": "int"},
-            "Nwt": {"var_type": "design", "limits": [5, 20], "types": "int"},
+            "Nwt": {"var_type": "design", "limits": [5, 50], "types": "int"},
             "wind_MW_per_km2 [MW/km2]": {"var_type": "design", "limits": [1, 10], "types": "int"},
             "solar_MW [MW]": {"var_type": "design", "limits": [30, 200], "types": "int"},
             "surface_tilt [deg]": {"var_type": "design", "limits": [0, 90], "types": "float"},

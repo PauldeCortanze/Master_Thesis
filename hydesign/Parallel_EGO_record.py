@@ -759,15 +759,15 @@ if __name__ == "__main__":
         "hpp_model": hpp_model,
         # EGO Inputs
         "opt_var": "NPV_over_CAPEX",
-        "n_procs": 6,
+        "n_procs": 5,
         "n_doe": 15,
-        "n_clusters": 4,  # total number of evals per iteration = n_clusters + 2*n_dims
+        "n_clusters": 6,  # total number of evals per iteration = n_clusters + 2*n_dims
         "n_seed": 0,
         "max_iter": 50,
         "final_design_fn": "hydesign_design_0.csv",
         "npred": 2e4,
         "tol": 1e-9,
-        "min_conv_iter": 5,
+        "min_conv_iter": 10,
         # Design Variables
         "variables": {
             "clearance [m]": {"var_type": "design", "limits": [10, 120], "types": "float"},

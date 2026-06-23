@@ -669,8 +669,8 @@ class hpp_model(hpp_base):
         self.setup_optimization(seed=kwargs.get('seed'),
                                 PopSize=kwargs.get('PopSize'),
                                 maxGen=kwargs.get('maxGen'),
-                                Pc=kwargs.get('Pc'),
-                                Pm=kwargs.get('Pm'))
+                                c1=kwargs.get('c1'),
+                                c2=kwargs.get('c2'))
 
         # Additional parameters
         prob.set_val("price_t", price)
@@ -943,7 +943,7 @@ class hpp_model(hpp_base):
         self.outputs = outputs
         return outputs
 
-    def setup_optimization(self, seed=0, PopSize=4, maxGen=1, Pc=0.6, Pm=0.2):
+    def setup_optimization(self, seed=0, PopSize=4, maxGen=1, c1=2.0, c2=1.0):
         model = self.prob.model
         prob = self.prob
 
@@ -963,13 +963,16 @@ class hpp_model(hpp_base):
 
         # Set up the driver
         self.prob.driver = om.pyOptSparseDriver()
-        self.prob.driver.options['optimizer'] = 'NSGA2'
-        self.prob.driver.opt_settings['PopSize'] = PopSize
-        self.prob.driver.opt_settings['maxGen'] = maxGen
+        self.prob.driver.options['optimizer'] = 'ALPSO'
+        prob.driver.opt_settings['SwarmSize'] = PopSize
+        prob.driver.opt_settings['maxOuterIter'] = maxGen
+        prob.driver.opt_settings['maxInnerIter'] = 1
+        prob.driver.opt_settings['minInnerIter'] = 1
+        prob.driver.opt_settings['stopCriteria'] = 0
 
         # self.prob.set_solver_print(level=2)
-        self.prob.driver.opt_settings['pCross_real'] = Pc
-        self.prob.driver.opt_settings['pMut_real'] = Pm
+        self.prob.driver.opt_settings['c1'] = c1
+        self.prob.driver.opt_settings['c2'] = c2
 
         self.prob.driver.opt_settings['seed'] = seed
 
@@ -977,9 +980,9 @@ class hpp_model(hpp_base):
         output_dir = 'optimization_results_parallel'
         os.makedirs(output_dir, exist_ok=True)
         self.filepath = os.path.join(
-            output_dir, f"results_NSGA2_seed{seed}_Pc{Pc}_Pm{Pm}.sql")
+            output_dir, f"results_ALPSO_seed{seed}_c1{c1}_c2{c2}.sql")
         self.filepath_csv = os.path.join(
-            output_dir, f"history_NSGA2_seed{seed}_Pc{Pc}_Pm{Pm}.csv")
+            output_dir, f"history_ALPSO_seed{seed}_c1{c1}_c2{c2}.csv")
 
         # Attach recorder to the DRIVER
         recorder = om.SqliteRecorder(self.filepath)
@@ -1118,16 +1121,22 @@ def mkdir(dir_):
 def run_optimization_seed(args):
     import traceback
     try:
-        seed, PopSize, maxGen, Pc, Pm, latitude, longitude, \
+        seed, PopSize, maxGen, c1, c2, latitude, longitude, \
             altitude, sim_pars_fn, input_ts_fn, variables = args
 
         print(f"[Run {seed}] Real seed used = {seed} "
               f"(PID={os.getpid()})", flush=True)
 
         # ✅ Use unique_seed in filenames so files don't collide
-        base_dir = os.path.abspath('optimization_results_NSGA2_Sensitivity')
-        worker_dir = os.path.join(base_dir, f'Pc{Pc}_Pm{Pm}')
+        base_dir = os.path.abspath('optimization_results_ALPSO_Sensitivity')
+        worker_dir = os.path.join(base_dir, f'seed{seed}')
         os.makedirs(worker_dir, exist_ok=True)
+
+        orig_dir = os.getcwd()
+        os.chdir(worker_dir)
+
+        sim_pars_fn = os.path.abspath(os.path.join(orig_dir, sim_pars_fn))
+        input_ts_fn = os.path.abspath(os.path.join(orig_dir, input_ts_fn))
 
         hpp = hpp_model(
             latitude=latitude,
@@ -1139,8 +1148,8 @@ def run_optimization_seed(args):
             seed=seed,  # ✅ pass unique seed
             PopSize=PopSize,
             maxGen=maxGen,
-            Pc=Pc,
-            Pm=Pm,
+            c1=c1,
+            c2=c2,
             worker_dir=worker_dir,
         )
 
@@ -1149,8 +1158,8 @@ def run_optimization_seed(args):
         result = {
             'run': seed,          # original index for tracking
             'unique_seed': seed,   # actual seed used
-            'Pc': Pc,
-            'Pm': Pm,
+            'c1': c1,
+            'c2': c2,
             'NPV_over_CAPEX': float(hpp.prob.get_val('NPV_over_CAPEX')[0]),
         }
         print(
@@ -1161,6 +1170,10 @@ def run_optimization_seed(args):
         import traceback
         print(f" WORKER CRASHED", flush=True)
         traceback.print_exc()
+        try:
+            os.chdir(orig_dir)
+        except:
+            pass
         raise
 
 
@@ -1219,17 +1232,16 @@ if __name__ == "__main__":
         },
     }
 
-    seed = 0
+    seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]  # Example seeds for reproducibility
     PopSize = 20
-    maxGen = 30
-    Pc_list = [0.75, 0.78, 0.8, 0.82, 0.85]
-    Pm_list = [0.14, 0.16]
+    maxGen = 40
+    c1 = 2.0
+    c2 = 1.0
 
     args_list = [
-        (seed, PopSize, maxGen, Pc, Pm, latitude, longitude,
+        (seed, PopSize, maxGen, c1, c2, latitude, longitude,
          altitude, sim_pars_fn, input_ts_fn, variables)
-        for Pc in Pc_list
-        for Pm in Pm_list
+        for seed in seeds
     ]
 
     start = time.time()
@@ -1244,5 +1256,5 @@ if __name__ == "__main__":
     end = time.time()
     print(f"\n=== Results (total time: {(end-start)/60:.1f} min) ===")
     for r in results:
-        print(f"Run {r['run']} (Pc={r['Pc']}, Pm={r['Pm']}) "
+        print(f"Run {r['run']} (c1={r['c1']}, c2={r['c2']}) "
               f"→ NPV/CAPEX={r['NPV_over_CAPEX']:.4f}")
