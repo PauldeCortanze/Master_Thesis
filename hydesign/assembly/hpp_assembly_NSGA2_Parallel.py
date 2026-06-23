@@ -692,7 +692,6 @@ class hpp_model(hpp_base):
         prob.set_val("tax_rate", sim_pars["tax_rate"])
         prob.set_val("land_use_per_solar_MW",
                      sim_pars["land_use_per_solar_MW"])
-
         for var in self.variables.keys():
             if self.variables[var]['var_type'] == 'design':
                 lower, upper = self.variables[var]['limits']
