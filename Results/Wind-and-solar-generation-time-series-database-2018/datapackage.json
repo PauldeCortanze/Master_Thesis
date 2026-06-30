@@ -1,0 +1,151 @@
+{
+  "name": "windtask25-timeseries-database",
+  "title": "Time series database of IEA Wind Task 25",
+  "version": "2018.0",
+  "homepage": "https://community.ieawind.org/task25/home",
+  "created": "2021-04-12T11:53:56.986718Z",
+  "description": "Realised and forecast values for wind and solar photovoltaic generation and electrical load. All CF values are in p.u. and load is share of maximum load during year. All times in UTC.",
+  "sources": [
+    {
+      "title": "ENTSO-E Transparency Platform",
+      "path": "https://transparency.entsoe.eu/"
+    },
+    {
+      "title": "Fraile, Daniel, and Ariola Mbistrova. 2018. 'Wind in Power 2017. Annual Combined Onshore and Offshore Wind Energy Statistics.' Edited by Iván Pineda and Pierre Tardieu. WindEurope.",
+      "path": "https://windeurope.org/wp-content/uploads/files/about-wind/statistics/WindEurope-Annual-Statistics-2017.pdf"
+    },
+    {
+      "title": "Komusanac, Ivan, Daniel Fraile, and Guy Brindley. 2019. 'Wind Energy in Europe in 2018. Trends and Statistics.' Edited by Colin Walsh and Ivan Pineda. WindEurope. ",
+      "path": "https://windeurope.org/wp-content/uploads/files/about-wind/statistics/WindEurope-Annual-Statistics-2018.pdf"
+    },
+    {
+      "title": "Eurostat (2020), 'Electricity production capacities by main fuel groups and operator'",
+      "path": "https://ec.europa.eu/eurostat/data"
+    },
+    {
+      "title": "REN",
+      "email": "antonio.couto@lneg.pt"
+    },
+    {
+      "title": "Netztransparenz.de",
+      "path": "https://www.netztransparenz.de/EEG/Marktpraemie/Online-Hochrechnung-Wind-Onshore",
+      "email": "jan.dobschinski@iee.fraunhofer.de"
+    },
+    {
+      "title": "Hydro Quebec",
+      "email": "Menemenlis.Nickie@ireq.ca"
+    },
+    {
+      "title": "ERCOT",
+      "email": "kate.doubleday@nrel.gov"
+    },
+    {
+      "title": "Svenska kraftnät. 2020. 'Statistik per elområde och timme 2018'",
+      "path": "https://www.svk.se/om-kraftsystemet/kraftsystemdata/elstatistik/"
+    },
+    {
+      "title": "Energiateollisuus. 2019. 'Sähkön tuntidata 2018'",
+      "path": "https://energia.fi/uutishuone/materiaalipankki/sahkon_tuntidata.html"
+    },
+    {
+      "title": "Noregs vassdrags- og energidirektorat. Vindkraftdata",
+      "path": "https://www.nve.no/energiforsyning/kraftproduksjon/vindkraft/vindkraftdata/"
+    }
+  ],
+  "contributors": [
+    {
+      "title": "Erkka Rinne",
+      "email": "erkka.rinne@vtt.fi",
+      "organization": "VTT, Finland",
+      "role": "author"
+    },
+    {
+      "title": "Hannele Holttinen",
+      "email": "hannele.holttinen@recognis.fi",
+      "role": "contributor"
+    }
+  ],
+  "keywords": [
+    "energy",
+    "electricitywind power",
+    "solar photovoltaics",
+    "actual generation",
+    "forecastIEA Wind Task 25"
+  ],
+  "temporal": {
+    "start": "2018-01-01 00:00Z",
+    "end": "2019-01-01 00:00Z",
+    "resolution": "15, 30 or 60 min depending on area"
+  },
+  "spatial": {
+    "name": "IEA Wind Task 25 member countries",
+    "location": "Denmark, Finland, France, Germany, Great Britain, Ireland, Italy, Netherlands, Northern Ireland, Norway, Portugal, Spain, Sweden, Austria, Belgium, Texas, Japan, Quebec"
+  },
+  "profile": "data-package",
+  "resources": [
+    {
+      "path": "CF Solar forecast.csv",
+      "encoding": "utf-8",
+      "name": "cf-solar-forecast",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "title": "CF Solar forecast"
+    },
+    {
+      "path": "CF Solar.csv",
+      "encoding": "utf-8",
+      "name": "cf-solar",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "title": "CF Solar"
+    },
+    {
+      "path": "CF Wind Offshore.csv",
+      "encoding": "utf-8",
+      "name": "cf-wind-offshore",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "title": "CF Wind Offshore"
+    },
+    {
+      "path": "CF Wind Onshore forecast.csv",
+      "encoding": "utf-8",
+      "name": "cf-wind-onshore-forecast",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "title": "CF Wind Onshore forecast"
+    },
+    {
+      "path": "CF Wind Onshore.csv",
+      "encoding": "utf-8",
+      "name": "cf-wind-onshore",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "title": "CF Wind Onshore"
+    },
+    {
+      "path": "Load forecast.csv",
+      "encoding": "utf-8",
+      "name": "load-forecast",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "title": "Load forecast"
+    },
+    {
+      "path": "Load.csv",
+      "encoding": "utf-8",
+      "name": "load",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "title": "Load"
+    },
+    {
+      "path": "Task25data.xlsx",
+      "encoding": "utf-8",
+      "name": "task25data",
+      "profile": "tabular-data-resource",
+      "format": "xlsx",
+      "title": "Combined data"
+    }
+  ]
+}
