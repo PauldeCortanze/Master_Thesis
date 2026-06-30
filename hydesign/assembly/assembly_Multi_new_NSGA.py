@@ -1322,7 +1322,7 @@ if __name__ == "__main__":
     # The file must have a datetime index in DD/MM/YYYY HH:MM format and
     # one numeric column (e.g. 'MDFwind_kgCO2eperMWh'), covering 2023-2024.
     # ------------------------------------------------------------------
-    mdf_fn = r"C:\Users\pauld\OneDrive\Documents\Mes documents\DTU\4th Master Thesis\HyDesign_Code\Master_Thesis\hydesign\emission\df_mdf.csv"
+    mdf_fn = r"C:\Users\pauld\OneDrive\Documents\Mes documents\DTU\4th Master Thesis\HyDesign_Code\Master_Thesis\hydesign\emission\df_mdf.csv" # Modify the path
     # mdf_fn = None   # ← uncomment to run single-objective only
 
     variables = {
